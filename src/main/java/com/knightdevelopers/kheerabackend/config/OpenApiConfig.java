@@ -1,5 +1,6 @@
 package com.knightdevelopers.kheerabackend.config;
 
+import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -16,6 +17,13 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
 
         return new OpenAPI()
+                .info(
+                        new Info()
+                                .title("Kheera Backend")
+                                .version("1.0")
+                                .description("Backend API for Kheera - A collaborative project-management platform for small engineering teams")
+                )
+
 
                 // Apply JWT globally
                 .addSecurityItem(
