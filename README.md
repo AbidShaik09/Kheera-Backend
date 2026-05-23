@@ -63,7 +63,7 @@ Verify PostgreSQL is running.
 # Clone Repository
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone [<Kheera Backend>](https://github.com/AbidShaik09/Kheera-Backend)
 ```
 
 Open the project in IntelliJ IDEA.
