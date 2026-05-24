@@ -23,7 +23,7 @@ public class AuthenticationService {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 +60 *60 *74))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60 *60 *24 ))
                 .signWith(key,SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -1,6 +1,6 @@
 CREATE TABLE emails (
                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                       recipient_email VARCHAR(255) UNIQUE NOT NULL,
+                       recipient_email VARCHAR(255) NOT NULL,
                        is_urgent BOOLEAN,
                        subject VARCHAR(255),
                        body VARCHAR(500),
