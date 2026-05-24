@@ -2,19 +2,24 @@ package com.knightdevelopers.kheerabackend.entity;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
+import java.util.UUID;
+
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     private String name;
 
     private String email;
 
     private String password;
+    private Date updatedAt;
+    private Date createdAt;
     public User() {
     }
 
@@ -35,13 +40,25 @@ public class User {
     public  String getName(){
         return  name;
     }
-    public  Long getId(){
+    public  Date getCreatedAt(){
+        return  createdAt;
+    }
+    public  Date getUpdatedAt(){
+        return  updatedAt;
+    }
+    public  UUID getId(){
         return  id;
     }
 
 //    Setters
-    public void setPassword(String newPassword){
-        password=newPassword;
+public void setPassword(String newPassword){
+    password=newPassword;
+}
+    public void setCreatedAt(Date newDate){
+        createdAt=newDate;
+    }
+    public void setUpdatedAt(Date updatedDate){
+        updatedAt=updatedDate;
     }
     public void setName(String newName){
         name=newName;

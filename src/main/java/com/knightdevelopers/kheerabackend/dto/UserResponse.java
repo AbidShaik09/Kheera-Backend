@@ -1,18 +1,20 @@
 package com.knightdevelopers.kheerabackend.dto;
 
+import java.util.UUID;
+
 public class UserResponse {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String email;
 
-    public UserResponse(Long id, String name, String email) {
+    public UserResponse(UUID id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

@@ -19,9 +19,9 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(
                         new Info()
-                                .title("Kheera Backend")
+                                .title("Kheera- A Project Management Platform")
                                 .version("1.0")
-                                .description("Backend API for Kheera - A collaborative project-management platform for small engineering teams")
+                                .description("A collaborative project management platform for small engineering teams")
                 )
 
 
