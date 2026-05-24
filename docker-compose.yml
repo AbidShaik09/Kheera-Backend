@@ -1,0 +1,21 @@
+services:
+
+  kheera-backend:
+    build: .
+
+    container_name: kheera-backend
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
