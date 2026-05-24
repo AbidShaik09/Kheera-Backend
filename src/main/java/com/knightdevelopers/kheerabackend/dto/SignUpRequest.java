@@ -4,6 +4,7 @@ public class SignUpRequest {
     private  String email;
     private  String password;
     private  String name;
+    private  long otp;
 
     public String getEmail(){
         return email;
@@ -25,5 +26,12 @@ public class SignUpRequest {
     }
     public void setName(String name){
         this.name=name;
+    }
+
+    public long getOtp(){
+        return otp;
+    }
+    public  void  setOtp(long otp){
+        this.otp=otp;
     }
 }
