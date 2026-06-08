@@ -4,42 +4,25 @@ on:
   push:
     branches:
       - main
-      - develop
 
 jobs:
-
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
+  deploy:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - run: |
+      - name: Deploy to Production Folder
+        run: |
           cd /opt/apps/prod/kheera-backend/Kheera-Backend
 
           git pull origin main
 
           chmod +x mvnw
+
           ./mvnw clean package -DskipTests
 
           docker compose down
+
           docker compose up -d --build
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/develop'
-    runs-on: self-hosted
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: |
-          cd /opt/apps/dev/kheera-backend/Kheera-Backend
-
-          git pull origin develop
-
-          chmod +x mvnw
-          ./mvnw clean package -DskipTests
-
-          docker compose -f docker-compose.dev.yml down
-          docker compose -f docker-compose.dev.yml up -d --build
