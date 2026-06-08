@@ -15,7 +15,7 @@ jobs:
 
       - name: Deploy to Development Folder
         run: |
-          cd /opt/apps/dev/kheera-backend/Kheera-Backend
+          cd /opt/apps/develop/kheera-backend/Kheera-Backend
 
           git pull origin develop
 
