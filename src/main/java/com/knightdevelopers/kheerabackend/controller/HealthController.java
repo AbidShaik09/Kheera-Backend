@@ -10,6 +10,6 @@ public class HealthController {
 
     @GetMapping
     public String test() {
-        return "Backend is Healthy";
+        return "Server is Healthy";
     }
 }
