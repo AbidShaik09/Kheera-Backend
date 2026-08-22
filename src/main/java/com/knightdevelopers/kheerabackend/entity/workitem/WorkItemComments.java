@@ -7,6 +7,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -29,5 +32,18 @@ public class WorkItemComments extends BaseEntity {
     private WorkItems workItem;
     void assignWorkItem(WorkItems workItem){
         this.workItem=workItem;
+    }
+
+    @OneToMany(mappedBy = "workItemComment",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<WorkItemCommentAttachments> attachments = new ArrayList<>();
+
+    public void addAttachment(WorkItemCommentAttachments  attachment){
+        attachments.add(attachment);
+        attachment.assignWorkItemComment(this);
+    }
+    public void  removeAttachment(WorkItemCommentAttachments attachment){
+        attachments.remove(attachment);
+
     }
 }
