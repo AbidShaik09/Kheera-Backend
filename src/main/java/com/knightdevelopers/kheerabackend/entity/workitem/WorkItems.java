@@ -2,6 +2,7 @@ package com.knightdevelopers.kheerabackend.entity.workitem;
 
 import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
 import com.knightdevelopers.kheerabackend.entity.project.Projects;
+import com.knightdevelopers.kheerabackend.entity.space.SpaceMembers;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -53,6 +54,18 @@ public class WorkItems extends BaseEntity {
         }
 
         this.workItemType = workItemType;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
+    @Setter(AccessLevel.NONE)
+    private SpaceMembers spaceMember;
+
+    public void  assignToSpaceMember(SpaceMembers spaceMember){
+        this.spaceMember = spaceMember;
+    }
+    public void unassignSpaceMember(){
+        this.spaceMember= null;
     }
 
 
