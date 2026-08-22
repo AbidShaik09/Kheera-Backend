@@ -81,6 +81,17 @@ public class WorkItems extends BaseEntity {
     }
 
 
+    @OneToMany(mappedBy = "workItem",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<WorkItemAttachments> attachments = new ArrayList<>();
+
+    public void addAttachment(WorkItemAttachments workItemAttachment){
+        attachments.add(workItemAttachment);
+        workItemAttachment.assignWorkItem(this);
+    }
+    public  void removeAttachment(WorkItemAttachments workItemAttachment){
+        attachments.remove(workItemAttachment);
+    }
 
 
 }
