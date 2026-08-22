@@ -61,6 +61,22 @@ public class Projects extends BaseEntity {
     }
 
 
+    @OneToMany(mappedBy = "project",
+        cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Setter(AccessLevel.NONE)
+    private List<ProjectWorkflows> workflows= new ArrayList<>();
+
+    public void addWorkflow(ProjectWorkflows workflow) {
+        workflows.add(workflow);
+        workflow.assignProject(this);
+    }
+
+    public void removeWorkflow(ProjectWorkflows workflow) {
+        workflows.remove(workflow);
+    }
+
 
 
 }

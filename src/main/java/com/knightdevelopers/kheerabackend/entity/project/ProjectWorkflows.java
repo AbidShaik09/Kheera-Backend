@@ -9,18 +9,17 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "project_urls")
-public class ProjectURLs extends BaseEntity {
-    private String url;
-    private String displayName;
+@Table(name = "project_workflows")
+public class ProjectWorkflows extends BaseEntity {
+    private  String workflowName;
     private String icon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
+    @JoinColumn(nullable = false,name = "project_id")
     @Setter(AccessLevel.NONE)
     private  Projects project;
 
     void assignProject(Projects project){
-        this.project=project;
+        this.project = project;
     }
 }
