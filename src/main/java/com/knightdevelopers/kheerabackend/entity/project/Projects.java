@@ -7,6 +7,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Setter
 @Getter
@@ -25,6 +28,21 @@ public class Projects extends BaseEntity {
 
     public void assignToSpace(Spaces space){
         this.space = space;
+    }
+
+
+    @OneToMany(mappedBy = "project",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<ProjectSprintStatus> sprintStatuses= new ArrayList<>();
+
+    public void addSprintStatus(ProjectSprintStatus sprintStatus){
+        this.sprintStatuses.add(sprintStatus);
+        sprintStatus.assignProject(this);
+    }
+    public void removeSprintStatus(ProjectSprintStatus sprintStatus){
+        this.sprintStatuses.remove(sprintStatus);
     }
 
 
