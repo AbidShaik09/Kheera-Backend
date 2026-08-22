@@ -9,6 +9,7 @@ import com.knightdevelopers.kheerabackend.repository.OtpRepository;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class OTPVerificationService {
         otpObject.setOtp(otpGenerated);
         otpObject.setEmail(userEmail.getEmail());
         otpObject.setExpiresAt(new Date(System.currentTimeMillis() + 1000 *60*15));
-        otpObject.setCreatedAt(new Date());
+        otpObject.setCreatedAt(Instant.now());
 
         otpRepository.save(otpObject);
 

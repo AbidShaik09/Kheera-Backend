@@ -276,6 +276,36 @@ main
 
 ---
 
+---
+
+# Db Design - ER Diagram
+
+<img width="2400" height="1410" alt="kheera_ER" src="https://github.com/user-attachments/assets/cf20fed2-bde4-4565-91d6-482219debb20" />
+
+                         User
+                           │
+                           │
+                     SpaceMember
+                      /    │    \
+                     /     │     \
+                  Space   Role    Comments
+                    │
+          ┌─────────┼───────────────┐
+          │         │               │
+        Roles  Permissions       Projects
+          │         │               │
+          └────┬────┘               │
+               │                    ├── Sprints
+        RolePermissions             │
+                                    ├── Workflow
+                                    │
+                                    └── WorkItems
+                                          │
+                           ┌──────────────┼──────────────┐
+                           │              │              │
+                       Comments      Attachments      Children
+---
+
 # Goal
 
 This project is part of a 90-day challenge to:
