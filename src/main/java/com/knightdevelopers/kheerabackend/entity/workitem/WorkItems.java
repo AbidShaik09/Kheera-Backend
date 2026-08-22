@@ -36,5 +36,25 @@ public class WorkItems extends BaseEntity {
     @OneToMany(mappedBy = "parentItem")
     private List<WorkItems> children = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_item_type_id",nullable = false)
+    @Setter(AccessLevel.NONE)
+    private WorkItemTypes workItemType;
+
+    public void setWorkItemType(WorkItemTypes workItemType) {
+        if (workItemType == null) {
+            throw new IllegalArgumentException("workItemType cannot be null");
+        }
+
+        if (!workItemType.getProject().getId().equals(project.getId())) {
+            throw new IllegalArgumentException(
+                    "work_item_type does not belong to project"
+            );
+        }
+
+        this.workItemType = workItemType;
+    }
+
+
 
 }

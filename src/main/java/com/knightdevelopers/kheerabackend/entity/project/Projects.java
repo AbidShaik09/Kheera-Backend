@@ -2,6 +2,7 @@ package com.knightdevelopers.kheerabackend.entity.project;
 
 import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
 import com.knightdevelopers.kheerabackend.entity.space.Spaces;
+import com.knightdevelopers.kheerabackend.entity.workitem.WorkItemTypes;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -75,6 +76,18 @@ public class Projects extends BaseEntity {
 
     public void removeWorkflow(ProjectWorkflows workflow) {
         workflows.remove(workflow);
+    }
+
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private  List<WorkItemTypes> workItemTypes = new ArrayList<>();
+
+    public void addWorkItemType(WorkItemTypes workItemType){
+        workItemTypes.add(workItemType);
+        workItemType.assignProject(this);
+    }
+    public void  removeWorkItemType(WorkItemTypes workItemType){
+        workItemTypes.remove(workItemType);
     }
 
 
