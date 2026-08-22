@@ -45,6 +45,21 @@ public class Projects extends BaseEntity {
         this.sprintStatuses.remove(sprintStatus);
     }
 
+    @OneToMany(mappedBy = "project",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<ProjectURLs> projectURLs= new ArrayList<>();
+
+    public void addProjectURL(ProjectURLs projectURL){
+        projectURLs.add(projectURL);
+        projectURL.assignProject(this);
+    }
+    public void  removeProjectURL(ProjectURLs projectURL){
+        projectURLs.remove(projectURL);
+
+    }
+
 
 
 
