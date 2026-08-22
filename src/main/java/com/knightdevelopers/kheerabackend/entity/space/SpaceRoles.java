@@ -29,4 +29,12 @@ public class SpaceRoles extends BaseEntity {
     }
 
 
+    @OneToMany(
+            mappedBy = "spaceRole",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<SpaceRolePermissions> rolePermissions = new ArrayList<>();
+
+
 }
