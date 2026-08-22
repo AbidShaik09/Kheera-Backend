@@ -1,25 +1,25 @@
 package com.knightdevelopers.kheerabackend.entity;
 
+import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
+import com.knightdevelopers.kheerabackend.entity.space.SpaceMembers;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class User extends BaseEntity {
 
     private String name;
-
     private String email;
-
     private String password;
-    private Date updatedAt;
-    private Date createdAt;
+    private String profilePic;
     public User() {
     }
 
@@ -29,41 +29,10 @@ public class User {
         this.password=password;
         this.name=name;
     }
-//  Getters
-    public String getPassword(){
-        return  password;
-    }
 
-    public String getEmail() {
-        return email;
-    }
-    public  String getName(){
-        return  name;
-    }
-    public  Date getCreatedAt(){
-        return  createdAt;
-    }
-    public  Date getUpdatedAt(){
-        return  updatedAt;
-    }
-    public  UUID getId(){
-        return  id;
-    }
+    @OneToMany(mappedBy = "user")
+    @Setter(AccessLevel.NONE)
+    private List<SpaceMembers> spaceMembers = new ArrayList<>();
 
-//    Setters
-public void setPassword(String newPassword){
-    password=newPassword;
-}
-    public void setCreatedAt(Date newDate){
-        createdAt=newDate;
-    }
-    public void setUpdatedAt(Date updatedDate){
-        updatedAt=updatedDate;
-    }
-    public void setName(String newName){
-        name=newName;
-    }
-    public void setEmail(String newEmail){
-        email=newEmail;
-    }
+
 }
