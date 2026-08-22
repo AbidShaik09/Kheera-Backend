@@ -1,6 +1,7 @@
 package com.knightdevelopers.kheerabackend.entity.space;
 
 import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
+import com.knightdevelopers.kheerabackend.entity.project.Projects;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -48,5 +49,18 @@ public class Spaces extends BaseEntity {
     }
     public  void removePermission(SpacePermissions permission){
         permissions.remove(permission);
+    }
+
+    @OneToMany(mappedBy = "space",cascade = CascadeType.ALL)
+    @Setter(AccessLevel.NONE)
+    private List<Projects> projects = new ArrayList<>();
+
+    public void addProject(Projects project){
+        projects.add(project);
+        project.assignToSpace(this);
+    }
+
+    public  void removeProject(Projects project){
+        projects.remove(project);
     }
 }
