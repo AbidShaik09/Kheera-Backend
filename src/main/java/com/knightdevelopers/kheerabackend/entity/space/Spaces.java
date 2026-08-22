@@ -1,5 +1,6 @@
 package com.knightdevelopers.kheerabackend.entity.space;
 
+import com.knightdevelopers.kheerabackend.entity.User;
 import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
 import com.knightdevelopers.kheerabackend.entity.project.Projects;
 import jakarta.persistence.*;
@@ -51,7 +52,7 @@ public class Spaces extends BaseEntity {
         permissions.remove(permission);
     }
 
-    @OneToMany(mappedBy = "space",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "space")
     @Setter(AccessLevel.NONE)
     private List<Projects> projects = new ArrayList<>();
 
@@ -63,4 +64,29 @@ public class Spaces extends BaseEntity {
     public  void removeProject(Projects project){
         projects.remove(project);
     }
+
+    @OneToMany(mappedBy = "space")
+    @Setter(AccessLevel.NONE)
+    private List<SpaceMembers> spaceMembers= new ArrayList<>();
+
+    public void addMember(User user, SpaceRoles role) {
+        if (role.getSpace() != this) {
+            throw new IllegalArgumentException(
+                    "Role does not belong to this space"
+            );
+        }
+        SpaceMembers member = new SpaceMembers();
+
+        member.assignUser(user);
+        member.assignSpace(this);
+        member.assignSpaceRole(role);
+
+        this.spaceMembers.add(member);
+        user.getSpaceMembers().add(member);
+    }
+    public void removeSpaceMember(SpaceMembers spaceMember) {
+        spaceMembers.remove(spaceMember);
+        spaceMember.getUser().getSpaceMembers().remove(spaceMember);
+    }
+
 }
