@@ -68,6 +68,19 @@ public class WorkItems extends BaseEntity {
         this.spaceMember= null;
     }
 
+    @OneToMany(mappedBy = "workItem",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<WorkItemComments> comments= new ArrayList<>();
+
+    public void addComment(WorkItemComments workItemComment){
+        comments.add(workItemComment);
+        workItemComment.assignWorkItem(this);
+    }
+    public void removeComment(WorkItemComments workItemComment){
+        comments.remove(workItemComment);
+    }
+
+
 
 
 }
