@@ -34,4 +34,19 @@ public class Spaces extends BaseEntity {
     public void removeRole(SpaceRoles role) {
         roles.remove(role);
     }
+
+    @OneToMany(mappedBy = "space",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private List<SpacePermissions> permissions = new ArrayList<>();
+
+    public  void addPermission(SpacePermissions permission){
+        permissions.add(permission);
+        permission.assignToSpace(this);
+
+    }
+    public  void removePermission(SpacePermissions permission){
+        permissions.remove(permission);
+    }
 }
