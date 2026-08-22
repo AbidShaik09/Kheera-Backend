@@ -90,6 +90,16 @@ public class Projects extends BaseEntity {
         workItemTypes.remove(workItemType);
     }
 
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Setter(AccessLevel.NONE)
+    private  List<Sprints> sprints= new ArrayList<>();
 
+    public void addSprint(Sprints sprint){
+        sprints.add(sprint);
+        sprint.assignProject(this);
+    }
+    public void removeSprint(Sprints sprint){
+        sprints.remove(sprint);
+    }
 
 }
