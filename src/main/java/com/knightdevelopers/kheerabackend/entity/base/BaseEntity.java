@@ -17,9 +17,9 @@ public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private boolean isDeleted;
+    private boolean isDeleted = false;
     private Instant updatedAt;
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 }
 
 /* migration template

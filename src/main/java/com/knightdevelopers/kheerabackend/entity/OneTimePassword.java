@@ -16,6 +16,6 @@ public class OneTimePassword extends BaseEntity {
     private  String email;
     private  Long otp;
     private Date expiresAt;
-    private Integer tries;
+    private Integer tries = 0;
 
 }
