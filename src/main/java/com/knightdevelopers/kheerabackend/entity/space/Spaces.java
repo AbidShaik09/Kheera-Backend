@@ -21,21 +21,15 @@ public class Spaces extends BaseEntity {
     private String description;
     private  String profilePic;
 
+    @OneToMany(mappedBy = "space")
+    @Setter(AccessLevel.NONE)
+    private List<SpaceMembers> spaceMembers= new ArrayList<>();
+
     @OneToMany(mappedBy = "space",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @Setter(AccessLevel.NONE)
     private List<SpaceRoles> roles = new ArrayList<>();
-
-
-    public void addRole(SpaceRoles role) {
-        roles.add(role);
-        role.assignToSpace(this);
-    }
-
-    public void removeRole(SpaceRoles role) {
-        roles.remove(role);
-    }
 
     @OneToMany(mappedBy = "space",
             cascade = CascadeType.ALL,
@@ -43,6 +37,17 @@ public class Spaces extends BaseEntity {
     @Setter(AccessLevel.NONE)
     private List<SpacePermissions> permissions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "space")
+    @Setter(AccessLevel.NONE)
+    private List<Projects> projects = new ArrayList<>();
+
+    public void addRole(SpaceRoles role) {
+        roles.add(role);
+        role.assignToSpace(this);
+    }
+    public void removeRole(SpaceRoles role) {
+        roles.remove(role);
+    }
     public  void addPermission(SpacePermissions permission){
         permissions.add(permission);
         permission.assignToSpace(this);
@@ -51,24 +56,13 @@ public class Spaces extends BaseEntity {
     public  void removePermission(SpacePermissions permission){
         permissions.remove(permission);
     }
-
-    @OneToMany(mappedBy = "space")
-    @Setter(AccessLevel.NONE)
-    private List<Projects> projects = new ArrayList<>();
-
     public void addProject(Projects project){
         projects.add(project);
         project.assignToSpace(this);
     }
-
     public  void removeProject(Projects project){
         projects.remove(project);
     }
-
-    @OneToMany(mappedBy = "space")
-    @Setter(AccessLevel.NONE)
-    private List<SpaceMembers> spaceMembers= new ArrayList<>();
-
     public void addMember(User user, SpaceRoles role) {
         if (role.getSpace() != this) {
             throw new IllegalArgumentException(

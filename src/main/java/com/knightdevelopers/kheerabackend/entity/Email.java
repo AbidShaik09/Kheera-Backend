@@ -21,9 +21,9 @@ public class Email {
     private String subject;
     private String body;
     private Date sendAt;
-    private Boolean isSent;
-    private Boolean isFailed;
-    private Integer tries;
+    private Boolean isSent = false;
+    private Boolean isFailed = false;
+    private Integer tries = 0;
     private String groupName;
     private Date createdAt;
 }
