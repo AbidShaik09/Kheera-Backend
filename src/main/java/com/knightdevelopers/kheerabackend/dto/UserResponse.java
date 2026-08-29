@@ -1,7 +1,10 @@
 package com.knightdevelopers.kheerabackend.dto;
 
+import lombok.Getter;
+
 import java.util.UUID;
 
+@Getter
 public class UserResponse {
 
     private UUID id;
@@ -14,15 +17,4 @@ public class UserResponse {
         this.email = email;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 }
