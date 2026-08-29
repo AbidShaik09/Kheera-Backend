@@ -18,7 +18,7 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private boolean isDeleted = false;
-    private Instant updatedAt;
+    private Instant updatedAt  = Instant.now();
     private Instant createdAt = Instant.now();
 }
 
