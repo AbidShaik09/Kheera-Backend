@@ -1,16 +1,12 @@
 package com.knightdevelopers.kheerabackend.controller;
 
 import com.knightdevelopers.kheerabackend.dto.UserResponse;
-import com.knightdevelopers.kheerabackend.entity.User;
-import com.knightdevelopers.kheerabackend.repository.UserRepository;
-import com.knightdevelopers.kheerabackend.service.AuthenticationService;
 import com.knightdevelopers.kheerabackend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,12 +19,9 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private  final AuthenticationService authService;
 
-    public UserController(UserService _userService, AuthenticationService _authService)
-    {
-        this.userService=_userService;
-        this.authService=_authService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
     @GetMapping
     public ResponseEntity<List<UserResponse>> getUsers(){
@@ -43,11 +36,10 @@ public class UserController {
 
         }
         String userEmail=authentication.getName();
-        Optional<User> optionalUser =userService.getUserByEmail(userEmail);
+        Optional<UserResponse> optionalUser = userService.getCurrentUser(userEmail);
         if (optionalUser.isEmpty()){
             return ResponseEntity.badRequest().body("User not found");
         }
-        User user = optionalUser.get();
-        return  ResponseEntity.ok(new UserResponse(user.getId(),user.getName(),user.getEmail())) ;
+        return ResponseEntity.ok(optionalUser.get());
     }
 }

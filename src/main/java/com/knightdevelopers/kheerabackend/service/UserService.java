@@ -5,6 +5,7 @@ import com.knightdevelopers.kheerabackend.entity.User;
 import com.knightdevelopers.kheerabackend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public class UserService {
         this.authenticationService=authenticationService;
     }
 
-    public  String resetUserPassword (ResetPasswordRequest resetPasswordRequest) throws  Exception{
+    @Transactional
+    public String resetUserPassword(ResetPasswordRequest resetPasswordRequest) throws Exception {
         OtpValidationRequest otpValidationRequest=new OtpValidationRequest();
         otpValidationRequest.setOtp(resetPasswordRequest.getOtp());
         otpValidationRequest.setEmail(resetPasswordRequest.getEmail());
@@ -38,6 +40,7 @@ public class UserService {
         return authenticationService.generateToken(existingUser.getEmail());
 
     }
+    @Transactional(readOnly = true)
     public String authenticateLoginRequest(LoginRequest loginRequest) throws Exception {
         boolean isUserExists= userRepository.findByEmail(loginRequest.getEmail()).isPresent();
         if(!isUserExists){
@@ -53,14 +56,16 @@ public class UserService {
         return authenticationService.generateToken(existingUser.getEmail());
     }
 
-    public Optional<User> getUserByEmail(String email){
-
-        return userRepository.findByEmail(email);
+    @Transactional(readOnly = true)
+    public Optional<UserResponse> getCurrentUser(String email) {
+        return userRepository.findActiveUserSummaryByEmail(email);
     }
 
+    @Transactional(readOnly = true)
     public boolean isAnExistingUser(String email){
         return userRepository.findByEmail(email).isPresent();
     }
+    @Transactional
     public String createUser(SignUpRequest signUpRequest) throws Exception {
 
         OtpValidationRequest otpValidationRequest=new OtpValidationRequest();
@@ -81,16 +86,8 @@ public class UserService {
 
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> getUsers() {
-
-
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail()
-                ))
-                .toList();
+        return userRepository.findActiveUserSummaries();
     }
 }
