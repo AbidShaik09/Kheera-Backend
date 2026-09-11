@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class OTPVerificationService {
@@ -77,6 +78,7 @@ public class OTPVerificationService {
         otpObject.setOtp(otpGenerated);
         otpObject.setEmail(userEmail);
         otpObject.setExpiresAt(new Date(System.currentTimeMillis() + 1000 *60*15));
+        otpObject.setCreatedAt(Instant.now());
 
         otpRepository.save(otpObject);
 
@@ -104,12 +106,17 @@ public class OTPVerificationService {
     }
 
     public boolean validateOtp(OtpValidationRequest otpRequest){
+        Optional<OneTimePassword> latestOtp = otpRepository
+                .findTopByEmailAndCreatedAtIsNotNullOrderByCreatedAtDesc(otpRequest.getEmail());
 
-        List<OneTimePassword> oneTimePasswords= otpRepository.findTop5ByEmailOrderByCreatedAtDesc(otpRequest.getEmail());
-        if(oneTimePasswords.isEmpty()){
+        if (latestOtp.isEmpty()) {
             return false;
         }
-        return oneTimePasswords.getFirst().getOtp() == otpRequest.getOtp();
+
+        OneTimePassword otp = latestOtp.get();
+        return otp.getExpiresAt() != null
+                && otp.getExpiresAt().after(new Date())
+                && Objects.equals(otp.getOtp(), otpRequest.getOtp());
 
 
     }
