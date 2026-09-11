@@ -24,7 +24,7 @@
 9. Implement the smallest complete change that meets the acceptance criteria.
    Keep naming explicit, remove dead code, and update tests whenever the
    contract or expected behavior changes.
-10. Before pushing any issue branch, run the backend locally using the appropriate development configuration. A successful build alone is not sufficient.  
+10. Before pushing any issue branch, run the backend locally using the appropriate development configuration `.\mvnw.cmd spring-boot:run` . A successful build alone is not sufficient.  
     Verify that:
     - the application starts successfully and remains healthy;
     - /api/health responds successfully;
