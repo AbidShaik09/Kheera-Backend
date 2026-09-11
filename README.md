@@ -2,6 +2,15 @@
 
 Spring Boot backend for the Kheera project.
 
+## Project Documentation
+
+- [Engineering standards](docs/engineering/ENGINEERING_STANDARDS.md)
+- [Implementation TODO](docs/planning/IMPLEMENTATION_TODO.md)
+- [Testing strategy](docs/testing/TESTING_STRATEGY.md)
+- [Database design findings](docs/architecture/DATABASE_DESIGN.md)
+- [API reference exploration](docs/api/LEGACY_API_REFERENCE.md)
+- [Backend onboarding guide](docs/onboarding/BACKEND_LEARNING_GUIDE.md)
+
 Built with:
 
 * Java 21
