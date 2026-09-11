@@ -38,7 +38,7 @@ public class WorkItems extends BaseEntity {
     private List<WorkItems> children = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_item_type_id",nullable = false)
+    @JoinColumn(name = "work_item_type_id")
     @Setter(AccessLevel.NONE)
     private WorkItemTypes workItemType;
 
