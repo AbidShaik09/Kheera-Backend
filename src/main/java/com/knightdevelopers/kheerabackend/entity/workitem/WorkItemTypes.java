@@ -17,7 +17,7 @@ public class WorkItemTypes extends BaseEntity {
     private String icon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id",nullable = false)
+    @JoinColumn(name = "project_id")
     @Setter(AccessLevel.NONE)
     private Projects project;
 

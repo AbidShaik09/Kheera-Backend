@@ -7,6 +7,7 @@ unredacted production output.
 
 | Date | Change | Affected areas | Issue / reference | Impact |
 | --- | --- | --- | --- | --- |
+| 2026-09-11 | Aligned OTP and work-item JPA mappings with the existing Flyway schema. | OneTimePassword, work-item entities, database design record. | [Backend #44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Fresh deployments use the intended OTP table and JPA nullability matches the physical schema. |
 | 2026-09-11 | Corrected password-reset OTP persistence, ordering, and expiry validation. | OTP repository and verification service. | [Backend #51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | New reset OTPs are timestamped; legacy null-timestamp rows cannot supersede them; expired OTPs are rejected. Regression coverage is deferred to #47. |
 | 2026-09-11 | Established documentation governance, architecture tracking, application progress, and engineering workflow standards. | Workspace docs, backend docs, frontend docs. | [Backend #52](https://github.com/AbidShaik09/Kheera-Backend/issues/52), [frontend #66](https://github.com/AbidShaik09/Kheera-Frontend/issues/66). | Future changes have an issue-first, documented delivery path. |
 | 2026-09-11 | Recorded password-reset OTP ordering and expiry defect for correction. | Backend OTP lookup and reset flow. | [Backend #51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Valid recent reset codes can be rejected by legacy null-timestamp data until fixed. |

@@ -8,8 +8,8 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | --- | --- | --- | --- |
 | Documentation and engineering workflow | Implemented | Backend [#52](https://github.com/AbidShaik09/Kheera-Backend/issues/52), frontend [#66](https://github.com/AbidShaik09/Kheera-Frontend/issues/66). | Adopt rules on every new issue and PR. |
 | Authentication UI | Implemented locally | Login, sign-up, and password reset are integrated with existing auth endpoints. | Verify against corrected OTP behavior and deployment configuration. |
-| Password-reset OTP integrity | Fix ready for review | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Merge OTP timestamp/expiry correction; add regression coverage in #47. |
-| Schema and persistence alignment | Planned | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Align Flyway, JPA mappings, and ER diagram before wider repository coverage. |
+| Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Add regression coverage in #47. |
+| Schema and persistence alignment | In progress | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Align Flyway, JPA mappings, and ER diagram before wider repository coverage. |
 | Authenticated space list | Planned | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43). | Resolve JWT email subject to the current user correctly. |
 | Test and CI baseline | Planned | Backend [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47), [#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48), [#49](https://github.com/AbidShaik09/Kheera-Backend/issues/49), [#50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Establish unit, PostgreSQL integration, MVC/security, worker, and CI coverage. |
 | Backend design boundaries | Planned | Backend [#46](https://github.com/AbidShaik09/Kheera-Backend/issues/46). | Harden DTO/repository/service boundaries after tests protect current behavior. |

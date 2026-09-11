@@ -8,11 +8,10 @@ identifies schema drift that should be resolved before using the diagram as an
 implementation contract.
 
 The Flyway SQL migrations under `Kheera-Backend/src/main/resources/db/migration`
-are the source of truth for the database currently created by the backend. JPA
-entities describe the runtime mapping, but a few mappings do not fully agree with
-those migrations.
+are the physical database contract. JPA entities describe the runtime mapping
+and must remain compatible with those migrations.
 
-No database, server, or application files were changed while making these notes.
+This record is updated when a schema or mapping decision changes.
 
 ## Domain Intent
 
@@ -159,30 +158,23 @@ It is currently a logical model, not an exact physical model of the backend.
 
 These are implementation inconsistencies independent of the dbdiagram model.
 
-### 1. OTP table mapping name
+### Resolved alignment decisions (2026-09-11)
 
-The `OneTimePassword` entity uses `@Table(name = "OneTimePasswords")`, while
-Flyway creates `one_time_passwords`. In PostgreSQL, these are different
-unquoted identifiers after case folding. The entity should map to
-`one_time_passwords` unless a separate table was intentionally created.
+The `OneTimePassword` entity maps directly to Flyway's
+`one_time_passwords` table. No independent `OneTimePasswords` table exists or
+is expected in a fresh deployment.
 
-### 2. Work-item type nullability
+`work_items.work_item_type_id` and `work_item_types.project_id` remain nullable
+in both Flyway and JPA. Making either relationship mandatory would require an
+explicit production-data backfill and a separate migration; that is outside the
+safe alignment scope. Domain services may still impose stricter rules when a
+specific workflow requires them.
 
-The migration adds `work_items.work_item_type_id` as nullable. The `WorkItems`
-entity declares `@JoinColumn(... nullable = false)`. New schema creation and
-runtime behavior can therefore disagree. Choose one rule:
+The reviewed dbdiagram.io model remains a logical design aid. The Flyway
+migration set and this document are the physical schema reference until a
+versioned diagram artifact is added to the repository.
 
-- Required type: backfill existing data and add a migration setting the column
-  to `NOT NULL`.
-- Optional type: change the JPA mapping and service validation to permit null.
-
-### 3. Work-item type project nullability
-
-The migration permits `work_item_types.project_id` to be null. The
-`WorkItemTypes` JPA relationship says it is non-null. Again, choose one rule and
-make Flyway and JPA agree.
-
-### 4. Workflow relationship is designed but unimplemented
+### Workflow relationship is designed but unimplemented
 
 The diagram indicates `work_items.workflow_id -> project_workflows.id`, but the
 backend table and entity do not include it. This is a meaningful product choice:

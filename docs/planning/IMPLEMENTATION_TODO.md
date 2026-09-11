@@ -45,7 +45,7 @@ the development or production database.
 
 ### 1. Restore reliable password-reset OTP validation
 
-- [ ] [#51 Fix password-reset OTP lookup when legacy records have null created_at](https://github.com/AbidShaik09/Kheera-Backend/issues/51)
+- [x] [#51 Fix password-reset OTP lookup when legacy records have null created_at](https://github.com/AbidShaik09/Kheera-Backend/issues/51)
 
 Do this first. It is a live account-recovery failure: PostgreSQL orders `NULL`
 timestamps before non-null values for the current descending lookup, allowing a
@@ -57,7 +57,7 @@ under the current delivery decision.
 
 ### 2. Schema and mapping alignment
 
-- [ ] [#44 Synchronize Flyway migrations, JPA mappings, and ER diagram](https://github.com/AbidShaik09/Kheera-Backend/issues/44)
+- [ ] [#44 Synchronize Flyway migrations, JPA mappings, and ER diagram](https://github.com/AbidShaik09/Kheera-Backend/issues/44) (in progress)
 
 Do this next because every repository/integration test depends on a database
 that agrees with JPA. Resolve the `OneTimePassword` table mapping and the known
