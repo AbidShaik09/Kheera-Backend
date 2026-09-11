@@ -19,7 +19,7 @@ Reference documents:
 
 ## Required Foundation: Engineering Workflow
 
-- [ ] [#52 Establish engineering workflow and backend documentation structure](https://github.com/AbidShaik09/Kheera-Backend/issues/52)
+- [x] [#52 Establish engineering workflow and backend documentation structure](https://github.com/AbidShaik09/Kheera-Backend/issues/52)
 
 Complete this before starting new backend feature work. Follow
 `docs/engineering/ENGINEERING_STANDARDS.md`: issue first, TODO second, then a
@@ -51,7 +51,9 @@ Do this first. It is a live account-recovery failure: PostgreSQL orders `NULL`
 timestamps before non-null values for the current descending lookup, allowing a
 legacy OTP row to be selected instead of the newest reset code. Ignore
 null-timestamp legacy rows, enforce OTP expiry, and add a focused regression
-test before deploying the fix.
+test before deploying the fix. The code fix is in progress; the regression test
+is intentionally deferred to [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47)
+under the current delivery decision.
 
 ### 2. Schema and mapping alignment
 
