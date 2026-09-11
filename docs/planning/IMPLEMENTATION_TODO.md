@@ -57,7 +57,7 @@ under the current delivery decision.
 
 ### 2. Schema and mapping alignment
 
-- [ ] [#44 Synchronize Flyway migrations, JPA mappings, and ER diagram](https://github.com/AbidShaik09/Kheera-Backend/issues/44) (in progress)
+- [x] [#44 Synchronize Flyway migrations, JPA mappings, and ER diagram](https://github.com/AbidShaik09/Kheera-Backend/issues/44)
 
 Do this next because every repository/integration test depends on a database
 that agrees with JPA. Resolve the `OneTimePassword` table mapping and the known
@@ -73,6 +73,15 @@ blocker for the authenticated workspace sidebar.
 
 **Exit criteria:** an authenticated user can retrieve only their active spaces;
 another user's memberships never appear.
+
+### 3a. Harden existing Hibernate boundaries
+
+- [ ] [#46 Harden Hibernate repository and DTO boundaries for existing APIs](https://github.com/AbidShaik09/Kheera-Backend/issues/46) (in progress)
+
+Apply DTO projections and explicit transaction boundaries to the currently
+implemented user endpoints. Integration coverage is intentionally deferred to
+[#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48) under the current
+owner-authorized no-review delivery decision.
 
 ## Phase 2: Protect Current Behavior with Tests
 
