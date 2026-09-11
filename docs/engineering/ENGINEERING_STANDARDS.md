@@ -14,24 +14,45 @@
 4. Start only from an up-to-date, clean local `develop` branch. Create a branch
    named `issue/<number>_<short-kebab-title>`, for example
    `issue/51_fix-password-reset-otp`. Never use `main` as a feature base.
-5. For a bug, first write a failing regression test. For a feature, write or
+5. Create a clean loosely coupled plan to implement the feature/ Fix Bug. Think in terms of whole Application and not just current Feature
+6. Maintain notes of plan based on github issue naming
+7. Follow Test Driven Development, Write Unit Tests or update existing Tests Based on the requirement and development plan. 
+8. For a bug, first write a failing regression test. For a feature, write or
    update the relevant unit tests before implementation. Mock collaborators
    outside the unit under test; use PostgreSQL Testcontainers for repository
-   queries, mappings, migrations, or PostgreSQL-specific behavior.
-6. Implement the smallest complete change that meets the acceptance criteria.
+   queries, mappings, migrations, or PostgreSQL-specific behavior. 
+9. Implement the smallest complete change that meets the acceptance criteria.
    Keep naming explicit, remove dead code, and update tests whenever the
    contract or expected behavior changes.
-7. Update every relevant document under `docs/workspace/` and the backend
+10. Before pushing any issue branch, run the backend locally using the appropriate development configuration. A successful build alone is not sufficient.  
+    Verify that:
+    - the application starts successfully and remains healthy;
+    - /api/health responds successfully;
+    - the API behavior affected by the issue is exercised locally using appropriate requests;
+    - expected success and relevant failure/authorization cases behave according to the acceptance criteria;
+    - Swagger/OpenAPI reflects API changes where applicable.
+      If local verification cannot be completed, do not push or merge. Document the blocker and ask the repository owner for guidance. Missing packages or tooling may be installed only after receiving permission.
+11. If relevant, Visit `/api/swagger-ui/index.html` or raw swagger docs to verify API controller reflects changes
+2Update every relevant document under `docs/workspace/` and the backend
    `docs/` directory according to
    `../workspace/governance/DOCUMENTATION_STANDARDS.md`. Update architecture,
    API/schema/design records during implementation; update progress and history
-   after a material merge or deployment.
-8. Before requesting a push, self-review the diff for correctness, edge cases,
+   after a material merge or deployment. 
+13. During implementation, run the tests relevant to the changed behavior frequently. Before a PR is considered ready, run the entire backend unit test suite and ./mvnw verify.  
+    Tests may only be skipped when the repository owner explicitly identifies the specific test or test category that may be skipped. An instruction to skip a test never means skip build, compilation, local startup, smoke testing, security checks, self-review, or other validation.  
+    Any skipped test must be listed in the PR with the reason it was skipped.
+14. Before requesting a push, self-review the diff for correctness, edge cases,
    authorization, validation, errors, concurrency, logging, secrets, and API
-   compatibility. Run the relevant test suite and the full backend build.
-9. When asked to push, push only the issue branch and create a pull request to
+   compatibility. Run the relevant test suite and the full backend build. 
+15. When asked to push, push only the issue branch and create a pull request to
    `develop`, never `main`. Do not merge before code review and required checks
-   pass. Close the issue only after merge and any required deployment check.
+   pass. Close the issue only after merge and any required deployment check. 
+16. Everytime there is a change made to the CORE schema, create a new relevant migration
+17. Validation rules take precedence over delivery instructions. An instruction such as “push,” “create PR,” or “merge” does not imply permission to bypass any validation gate. If a required gate fails, stop the delivery process, report the failure, and fix it or request guidance.
+
+
+18. resulting pipeline becomes:
+Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → CI → review → merge to develop → dev deployment smoke check.
 
 If the worktree is dirty or the repository has no `develop` branch, stop before
 switching branches. Preserve existing work and resolve the branch baseline with
@@ -79,4 +100,5 @@ the repository owner first.
 - Unit/repository/controller coverage reflects the intended behavior.
 - Relevant tests and `./mvnw verify` pass.
 - Code is self-reviewed for cleanup, security, and edge cases.
+- Run all Unit Tests and ensure no other functionality is Broken, If unit test in other features fail, reach out to application docs to figur out intended behaviour and fix the broken code or update Unit Tests, whichever meets the application requirements
 - PR targets `develop`, documents verification, and awaits review before merge.
