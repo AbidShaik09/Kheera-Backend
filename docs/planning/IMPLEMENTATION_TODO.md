@@ -27,6 +27,14 @@ clean `develop` branch named `issue/<number>_<short-kebab-title>`. Tests are
 written or updated before implementation, and every PR targets `develop` and
 awaits review.
 
+### Expedited delivery exception policy
+
+- [ ] [#56 Define expedited hotfix and no-review push delivery categories](https://github.com/AbidShaik09/Kheera-Backend/issues/56) (in progress)
+
+Use only with explicit owner authorization and the safeguards in
+`docs/engineering/ENGINEERING_STANDARDS.md`. The related CI/CD gate work is
+[#55](https://github.com/AbidShaik09/Kheera-Backend/issues/55).
+
 ## Phase 0: Make Testing Runnable
 
 **Goal:** Every developer and CI runner can execute a repeatable Java 21 test

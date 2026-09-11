@@ -37,6 +37,41 @@ If the worktree is dirty or the repository has no `develop` branch, stop before
 switching branches. Preserve existing work and resolve the branch baseline with
 the repository owner first.
 
+## Owner-Authorized Expedited Delivery
+
+The normal flow above is mandatory unless the repository owner explicitly
+authorizes one of these categories in the issue or task conversation. Every
+expedited change still requires a linked GitHub issue, a clean branch from
+`develop`, a PR to `develop`, a focused self-review, updated documentation, and
+a PR description that states the exception, reason, verification performed,
+and deferred follow-up work.
+
+### Hotfix
+
+A hotfix restores production behavior or remediates a time-sensitive security
+or reliability defect. The change must be minimal and directly related to the
+reported impact. Tests may be deferred only with explicit owner authorization
+and a linked test issue; they remain required follow-up work.
+
+### No-Review Push
+
+A no-review push is an explicit owner authorization to bypass required GitHub
+approval for a low-risk, tightly scoped change. It does not waive validation,
+security review, or test requirements by default. Use the GitHub bypass only
+after the PR documents why the exception is safe and the owner has authorized
+it.
+
+### Never Eligible Automatically
+
+Neither category automatically permits credentials or secret handling,
+irreversible/destructive data migrations, broad authorization changes, payment
+or identity-provider changes, dependency upgrades with known advisories, or
+unbounded refactors. These changes require normal review unless the owner gives
+specific, recorded authorization after the risks are explained.
+
+Track CI/CD enforcement and secret-handling improvements in
+[#55](https://github.com/AbidShaik09/Kheera-Backend/issues/55).
+
 ## Design and Code Rules
 
 - Apply SOLID principles without speculative abstraction. Controllers handle

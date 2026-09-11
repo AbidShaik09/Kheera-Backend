@@ -7,6 +7,7 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | Workstream | Current status | Active work / source | Next milestone |
 | --- | --- | --- | --- |
 | Documentation and engineering workflow | Implemented | Backend [#52](https://github.com/AbidShaik09/Kheera-Backend/issues/52), frontend [#66](https://github.com/AbidShaik09/Kheera-Frontend/issues/66). | Adopt rules on every new issue and PR. |
+| Expedited delivery policy | In progress | Backend [#56](https://github.com/AbidShaik09/Kheera-Backend/issues/56). | Document auditable hotfix and no-review exception rules; align CI enforcement in #55. |
 | Authentication UI | Implemented locally | Login, sign-up, and password reset are integrated with existing auth endpoints. | Verify against corrected OTP behavior and deployment configuration. |
 | Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Add regression coverage in #47. |
 | Schema and persistence alignment | Implemented | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Preserve the aligned Flyway/JPA baseline as new persistence features are added. |
