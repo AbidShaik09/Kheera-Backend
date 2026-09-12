@@ -15,6 +15,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
                 "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration",
         "spring.task.scheduling.enabled=false",
         "jwt.secret=abcdefghijklmnopqrstuvwxyz123456",
+        "spring.mail.host=localhost",
+        "spring.mail.port=2525",
+        "spring.mail.username=test",
+        "spring.mail.password=test",
         "server.port=0"
 })
 class KheeraBackendApplicationTests {

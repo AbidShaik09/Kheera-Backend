@@ -87,7 +87,7 @@ owner-authorized no-review delivery decision.
 
 ### 4. Service unit tests
 
-- [ ] [#47 Add unit tests for authentication, user, and OTP services](https://github.com/AbidShaik09/Kheera-Backend/issues/47)
+- [ ] [#47 Add unit tests for authentication, user, and OTP services](https://github.com/AbidShaik09/Kheera-Backend/issues/47) (in review)
 
 Implement this after phase 1. Preserve the focused #51 regression case here as
 part of the wider OTP service coverage. Keep these tests fast and independent of
@@ -115,8 +115,10 @@ from auth endpoints.
 Start unit tests for the worker in parallel with #47. Enable CI test gating only
 after #47, #48, and #49 are stable. The deployment workflows must stop using
 `-DskipTests` before this phase is complete. Worker retry behavior is covered,
-including null retry counts, and deployment workflows run `./mvnw test` before
-packaging.
+including null retry counts, and deployment workflows run `./mvnw clean package`
+with tests enabled. The context smoke test supplies explicit localhost mail
+settings. After merging develop, all 33 tests pass `mvnw.cmd clean verify` with
+zero failures, errors, or skips. The shared PR workflow also runs clean verify.
 
 **Exit criteria:** Pull requests and deployments run the test suite. A failed
 test prevents deployment.

@@ -18,8 +18,8 @@ Spring framework internals, or trivial delegation that has no business risk.
 - `spring-boot-starter-test` supplies JUnit Jupiter, Mockito, AssertJ, and the
   Spring test framework.
 - No Testcontainers dependency is currently declared.
-- Deployment workflows run `./mvnw test` before packaging so failing tests stop
-  development or production deployment.
+- Deployment workflows run Maven with `-DskipTests`; this must change before
+  tests can protect development or production deployment.
 - The backend uses PostgreSQL, Flyway, Hibernate validation, UUIDs, and JPQL
   projections. Repository tests must therefore use PostgreSQL, not H2.
 
@@ -528,7 +528,29 @@ development or production PostgreSQL database.
 
 ## CI Policy
 
-The backend deployment workflows execute tests before packaging and deployment:
+### Mandatory Docker verification
+
+Docker-backed tests must run locally and in CI whenever they are present on
+the branch. Verify the engine with `docker info`, then run
+`./mvnw clean verify` (Windows: `.\mvnw.cmd clean verify`) against the
+committed test harness. Require zero failures, zero errors, and zero skipped
+tests. Repeat clean verification after upstream merges and conflict resolution.
+Do not disable Testcontainers, exclude repository tests, use skip flags, or
+replace the container connection with a local database to claim verification.
+If Docker is unavailable or access is denied, fix the environment or report
+the blocker; do not push or resolve review comments on compilation alone.
+This requirement supersedes earlier Docker-unavailable verification exceptions.
+Record actual test counts and the verified commit on the PR.
+
+The backend deployment workflows run tests before deployment:
+
+```text
+./mvnw clean package
+```
+
+Clean compilation prevents stale tests in persistent deployment checkouts.
+Test mail properties are supplied explicitly to the context test; no developer
+environment file or SMTP credentials are required. Keep the following gates:
 
 1. Pull request: `./mvnw test` for unit and controller tests.
 2. Pull request or protected branch: run PostgreSQL Testcontainers integration
@@ -537,9 +559,9 @@ The backend deployment workflows execute tests before packaging and deployment:
 4. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
-The test environment needs Java 21 and Docker/Testcontainers support. A local
-runner without Docker can run unit and controller tests, but PostgreSQL
-Testcontainers coverage requires a Docker-capable runner.
+The test environment needs Java 21 and Docker/Testcontainers support. Both are
+available on the local Windows host as of 2026-09-12. Per-user Docker Desktop
+may require running the command with access to the user's Docker named pipe.
 
 ## First Implementation Batch
 

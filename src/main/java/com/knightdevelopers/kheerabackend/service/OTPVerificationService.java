@@ -9,6 +9,7 @@ import com.knightdevelopers.kheerabackend.repository.OtpRepository;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
@@ -19,10 +20,12 @@ public class OTPVerificationService {
 
     private final OtpRepository otpRepository;
     private final EmailRepository emailRepository;
+    private final Clock clock;
 
-    public OTPVerificationService(OtpRepository otpRepository, EmailRepository emailRepository){
+    public OTPVerificationService(OtpRepository otpRepository, EmailRepository emailRepository, Clock clock){
         this.otpRepository=otpRepository;
         this.emailRepository=emailRepository;
+        this.clock = clock;
     }
     public static long generateOtp() {
         SecureRandom random = new SecureRandom();
@@ -38,8 +41,8 @@ public class OTPVerificationService {
         OneTimePassword otpObject = new OneTimePassword();
         otpObject.setOtp(otpGenerated);
         otpObject.setEmail(userEmail.getEmail());
-        otpObject.setExpiresAt(new Date(System.currentTimeMillis() + 1000 *60*15));
-        otpObject.setCreatedAt(Instant.now());
+        otpObject.setExpiresAt(Date.from(clock.instant().plusMillis(1000 * 60 * 15)));
+        otpObject.setCreatedAt(Instant.now(clock));
 
         otpRepository.save(otpObject);
 
@@ -77,8 +80,8 @@ public class OTPVerificationService {
         OneTimePassword otpObject = new OneTimePassword();
         otpObject.setOtp(otpGenerated);
         otpObject.setEmail(userEmail);
-        otpObject.setExpiresAt(new Date(System.currentTimeMillis() + 1000 *60*15));
-        otpObject.setCreatedAt(Instant.now());
+        otpObject.setExpiresAt(Date.from(clock.instant().plusMillis(1000 * 60 * 15)));
+        otpObject.setCreatedAt(Instant.now(clock));
 
         otpRepository.save(otpObject);
 
@@ -115,7 +118,7 @@ public class OTPVerificationService {
 
         OneTimePassword otp = latestOtp.get();
         return otp.getExpiresAt() != null
-                && otp.getExpiresAt().after(new Date())
+                && otp.getExpiresAt().after(Date.from(clock.instant()))
                 && Objects.equals(otp.getOtp(), otpRequest.getOtp());
 
 
