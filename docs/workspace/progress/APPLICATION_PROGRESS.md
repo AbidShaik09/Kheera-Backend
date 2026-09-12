@@ -1,6 +1,6 @@
 # Kheera Application Progress
 
-**Last updated:** 2026-09-11. This is the live, whole-application delivery
+**Last updated:** 2026-09-12. This is the live, whole-application delivery
 view. Update it when work starts, becomes blocked, changes scope, merges, or is
 deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 
@@ -11,7 +11,7 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Add regression coverage in #47. |
 | Schema and persistence alignment | Implemented | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Preserve the aligned Flyway/JPA baseline as new persistence features are added. |
 | Authenticated space list | In review | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43). | Verify PR checks and merge after review. |
-| Test and CI baseline | Planned | Backend [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47), [#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48), [#49](https://github.com/AbidShaik09/Kheera-Backend/issues/49), [#50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Establish unit, PostgreSQL integration, MVC/security, worker, and CI coverage. |
+| Test and CI baseline | In review | Backend [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47), [#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48), [#49](https://github.com/AbidShaik09/Kheera-Backend/issues/49), [#50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Merge service, PostgreSQL repository, and MVC/security coverage, then complete worker and CI coverage. |
 | Backend design boundaries | In review | Backend [#46](https://github.com/AbidShaik09/Kheera-Backend/issues/46). | Verify PR checks and merge after review. |
 | Space module | Planned | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43), frontend [#63](https://github.com/AbidShaik09/Kheera-Frontend/issues/63). | Deliver authorization-scoped space APIs and Space Details UI. |
 | Project board | Planned | Backend [#45](https://github.com/AbidShaik09/Kheera-Backend/issues/45), [#10](https://github.com/AbidShaik09/Kheera-Backend/issues/10), frontend [#64](https://github.com/AbidShaik09/Kheera-Frontend/issues/64). | Define ordered workflow stages, then build project APIs and board UI. |
