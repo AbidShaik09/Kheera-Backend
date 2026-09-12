@@ -21,8 +21,6 @@ jobs:
 
           chmod +x mvnw
 
-          ./mvnw test
-
           ./mvnw clean package
 
           docker compose -f docker-compose.dev.yml down
