@@ -21,7 +21,9 @@ jobs:
 
           chmod +x mvnw
 
-          ./mvnw clean package -DskipTests
+          ./mvnw test
+
+          ./mvnw clean package
 
           docker compose down
 

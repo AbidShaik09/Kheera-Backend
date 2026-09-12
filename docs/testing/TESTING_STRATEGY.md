@@ -18,8 +18,8 @@ Spring framework internals, or trivial delegation that has no business risk.
 - `spring-boot-starter-test` supplies JUnit Jupiter, Mockito, AssertJ, and the
   Spring test framework.
 - No Testcontainers dependency is currently declared.
-- Deployment workflows run Maven with `-DskipTests`; this must change before
-  tests can protect development or production deployment.
+- Deployment workflows run `./mvnw test` before packaging so failing tests stop
+  development or production deployment.
 - The backend uses PostgreSQL, Flyway, Hibernate validation, UUIDs, and JPQL
   projections. Repository tests must therefore use PostgreSQL, not H2.
 
@@ -528,13 +528,7 @@ development or production PostgreSQL database.
 
 ## CI Policy
 
-The backend deployment workflows currently execute:
-
-```text
-./mvnw clean package -DskipTests
-```
-
-Change the pipeline in stages:
+The backend deployment workflows execute tests before packaging and deployment:
 
 1. Pull request: `./mvnw test` for unit and controller tests.
 2. Pull request or protected branch: run PostgreSQL Testcontainers integration
@@ -543,9 +537,9 @@ Change the pipeline in stages:
 4. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
-The test environment needs Java 21 and Docker/Testcontainers support. The local
-Windows environment used for this review does not currently have Java available,
-so `mvnw.cmd test` cannot bootstrap there.
+The test environment needs Java 21 and Docker/Testcontainers support. A local
+runner without Docker can run unit and controller tests, but PostgreSQL
+Testcontainers coverage requires a Docker-capable runner.
 
 ## First Implementation Batch
 

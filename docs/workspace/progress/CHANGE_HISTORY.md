@@ -7,6 +7,7 @@ unredacted production output.
 
 | Date | Change | Affected areas | Issue / reference | Impact |
 | --- | --- | --- | --- | --- |
+| 2026-09-12 | Added email worker unit tests, made retry handling null-safe, and required deployment workflows to run tests before packaging. | Email worker, deployment workflows, application smoke test, testing documentation. | [Backend #50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Email delivery retry behavior is protected, and failing tests now stop development and production deployments. |
 | 2026-09-12 | Updated the delivery workflow so GitHub issues are closed after PR creation, with review, CI, merge, and deployment follow-up continuing on the PR. | Backend engineering governance. | Direct repository-owner request. | Future issue branches have a single PR-centered follow-up path after the pull request is opened. |
 | 2026-09-12 | Added workflow rules for sandbox escalation, docs-only direct pushes, post-PR blocker review, and misunderstanding root-cause updates. | Backend engineering and documentation governance. | Direct repository-owner request. | Future issue work has clearer guidance for permission failures, PR follow-up, and correcting ambiguous instructions. |
 | 2026-09-11 | Aligned OTP and work-item JPA mappings with the existing Flyway schema. | OneTimePassword, work-item entities, database design record. | [Backend #44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Fresh deployments use the intended OTP table and JPA nullability matches the physical schema. |

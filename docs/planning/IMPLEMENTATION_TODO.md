@@ -110,11 +110,13 @@ from auth endpoints.
 
 ### 7. Email worker tests and CI gate
 
-- [ ] [#50 Add tests for scheduled email worker and enforce tests in CI](https://github.com/AbidShaik09/Kheera-Backend/issues/50)
+- [ ] [#50 Add tests for scheduled email worker and enforce tests in CI](https://github.com/AbidShaik09/Kheera-Backend/issues/50) (in review)
 
 Start unit tests for the worker in parallel with #47. Enable CI test gating only
 after #47, #48, and #49 are stable. The deployment workflows must stop using
-`-DskipTests` before this phase is complete.
+`-DskipTests` before this phase is complete. Worker retry behavior is covered,
+including null retry counts, and deployment workflows run `./mvnw test` before
+packaging.
 
 **Exit criteria:** Pull requests and deployments run the test suite. A failed
 test prevents deployment.
