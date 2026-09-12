@@ -1,5 +1,21 @@
 # Kheera Backend Implementation Todo
 
+## Next Product Delivery Slices (2026-09-13)
+
+These scoped issues reconcile the API contract with the current frontend placeholders.
+Implement in dependency order; each requires its own branch and PR to `develop`.
+
+- [ ] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66): replaces superseded historical #9 scope; retain the existing space-list contract.
+- [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67): depends on #66.
+- [ ] [#68 Space-scoped project CRUD and summaries](https://github.com/AbidShaik09/Kheera-Backend/issues/68): child slice of #10; depends on #66/#67 and #45 completion semantics.
+- [ ] [#69 Work-item CRUD, hierarchy, and board reads](https://github.com/AbidShaik09/Kheera-Backend/issues/69): child slice of #11; depends on #68, membership authorization, #45, and relevant #44 schema alignment.
+- [ ] [#70 Dashboard read model and visit history](https://github.com/AbidShaik09/Kheera-Backend/issues/70): follows #66–#69 and #45; replaces task/focus mocks after data is stable. Favourites, activity, notifications, and calendar remain explicit follow-ups.
+
+Use the linked issues for acceptance criteria and current dependencies. #45 retains
+ownership of stage design and board movement; #10/#11 retain their remaining module
+scope. Verify foundation PR merge state rather than treating closed issues as merged.
+Older phase references to #9 below are historical; use #66/#67 for space delivery.
+
 ## How to Use This File
 
 This is the recommended delivery order for currently open backend work. Follow

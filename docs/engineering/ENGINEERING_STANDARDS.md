@@ -55,8 +55,11 @@
    compatibility. Run the relevant test suite and the full backend build. 
 15. When asked to push, push only the issue branch and create a pull request to
    `develop`, never `main`. After checking the diff, if the change contains
-   only documentation or workflow-rule text and was explicitly requested by the
-   repository owner, update `docs/workspace/progress/CHANGE_HISTORY.md`, commit
+   only documentation or workflow-rule text, the repository owner's standing
+   instruction is to push it directly to `develop`, including documentation
+   produced while completing an authorized task. Do not require a separate
+   push request or leave completed docs-only updates uncommitted. Update
+   `docs/workspace/progress/CHANGE_HISTORY.md`, commit
    the docs-only change, and push it directly to `develop`. Docs-only direct
    pushes must not contain code, schema, runtime configuration, dependency, or
    generated artifact changes. Do not merge before code review and required
