@@ -10,7 +10,7 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | Authentication UI | Implemented locally | Login, sign-up, and password reset are integrated with existing auth endpoints. | Verify against corrected OTP behavior and deployment configuration. |
 | Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Add regression coverage in #47. |
 | Schema and persistence alignment | Implemented | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Preserve the aligned Flyway/JPA baseline as new persistence features are added. |
-| Authenticated space list | Planned | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43). | Resolve JWT email subject to the current user correctly. |
+| Authenticated space list | In review | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43). | Verify PR checks and merge after review. |
 | Test and CI baseline | Planned | Backend [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47), [#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48), [#49](https://github.com/AbidShaik09/Kheera-Backend/issues/49), [#50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Establish unit, PostgreSQL integration, MVC/security, worker, and CI coverage. |
 | Backend design boundaries | In review | Backend [#46](https://github.com/AbidShaik09/Kheera-Backend/issues/46). | Verify PR checks and merge after review. |
 | Space module | Planned | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43), frontend [#63](https://github.com/AbidShaik09/Kheera-Frontend/issues/63). | Deliver authorization-scoped space APIs and Space Details UI. |
