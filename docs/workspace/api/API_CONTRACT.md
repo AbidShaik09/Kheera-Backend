@@ -163,6 +163,17 @@ particularly `Email already registered!`.
 
 ## Required Frontend APIs
 
+### Browser origin policy
+
+Credentialed cross-origin requests require an exact origin in
+`app.cors.allowed-origins`, configured through the comma-separated
+`CORS_ALLOWED_ORIGINS` environment variable. Standalone local startup defaults
+to `http://localhost:4200`. Production Compose defaults to
+`https://kheera.theknightdevelopers.online`; development Compose defaults to
+`https://dev.kheera.theknightdevelopers.online`. An untrusted preflight receives
+403 without allow-origin or allow-credentials headers. Wildcard origins are
+invalid when credentials are enabled.
+
 The following endpoints are the recommended contract for the drafted screens.
 They are not implemented unless marked otherwise.
 

@@ -271,6 +271,20 @@ class SpaceMembersRepositoryTest extends PostgreSqlIntegrationTest {
 }
 ```
 
+Assert exceptions at the boundary exercised by the test. Direct `EntityManager`
+operations emit Hibernate/JPA exceptions; Spring Data repository operations
+translate them into Spring data-access exceptions. For the duplicate-membership
+native insert, verify `ConstraintViolationException`, SQLSTATE `23505`, and
+constraint name `uq_space_member` so another integrity failure cannot satisfy
+the test.
+
+OTP ordering coverage includes a same-email legacy row with a null timestamp,
+which must not supersede a dated OTP. Queue coverage places excluded sent and
+failed rows ahead of eligible rows, includes future and exact-cutoff rows, and
+asserts the complete ordered twenty-row result. This makes each filter and the
+window limit observable instead of allowing excluded rows to fall outside the
+window accidentally.
+
 ### `UserRepository`
 
 Test:
@@ -528,6 +542,16 @@ development or production PostgreSQL database.
 
 ## CI Policy
 
+PR #63 supplies explicit localhost mail settings to the full-context test so
+it starts without an ignored environment file or SMTP credentials. The MVC
+security slice imports `TimeConfig` alongside the real `AuthenticationService`
+to satisfy its clock dependency after merging the service-test baseline.
+The current-user route is checked with missing, malformed, and invalid bearer
+tokens. CORS tests exercise both an explicitly allowed origin and rejection of
+an untrusted origin without credentialed response headers.
+The complete clean verification passes 41 tests with zero skips; the shared
+`Verify Backend` PR workflow runs the same command on Ubuntu with Docker.
+
 ### Mandatory Docker verification
 
 Docker-backed tests must run locally and in CI whenever they are present on
@@ -559,6 +583,15 @@ environment file or SMTP credentials are required. Keep the following gates:
 4. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
+PR #62 adds `.github/workflows/verify.yml` to run the full Maven `verify`
+lifecycle on a GitHub-hosted Ubuntu runner with Java 21 and Docker for pull
+requests targeting `develop`. It uses the committed PostgreSQL 16 Testcontainers
+harness. Deployment gating remains part of #50.
+
+On 2026-09-12, the committed PostgreSQL 16 Testcontainers harness passed
+`mvnw.cmd clean verify` on local Docker Desktop: 34 tests, zero failures,
+zero errors, zero skipped. Earlier diagnostic runs against a substitute
+PostgreSQL instance are superseded by this Docker-backed verification.
 The test environment needs Java 21 and Docker/Testcontainers support. Both are
 available on the local Windows host as of 2026-09-12. Per-user Docker Desktop
 may require running the command with access to the user's Docker named pipe.
