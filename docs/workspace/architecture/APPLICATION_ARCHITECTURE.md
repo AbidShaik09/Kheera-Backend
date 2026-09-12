@@ -69,9 +69,11 @@ issue: [backend #51](https://github.com/AbidShaik09/Kheera-Backend/issues/51).
 JPA entities remain internal to persistence and service code. The existing user
 read endpoints use `UserResponse` DTO projections from `UserRepository`, so
 controllers do not serialize `User` entities or traverse lazy associations.
-`UserService` owns transactions for user reads and mutations. Production
-defaults disable Open Session in View and SQL logging; repository and MVC
-coverage for these boundaries is tracked by backend #47 through #49.
+`UserService` owns transactions for user reads and mutations. Authentication
+and password-reset flows load only active users for credential checks and
+mutation. Production defaults disable Open Session in View and SQL logging;
+repository and MVC coverage for these boundaries is tracked by backend #47
+through #49.
 
 ## Deployment Topology
 

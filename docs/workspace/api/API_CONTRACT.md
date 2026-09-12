@@ -137,12 +137,12 @@ text, not JSON.
 
 | Method and path | Auth | Request body | Success | Known error behaviour |
 | --- | --- | --- | --- | --- |
-| `POST /api/auth/login` | Public | `{ "email", "password" }` | `200`, raw JWT text | `401` `Invalid Email Or Password` |
+| `POST /api/auth/login` | Public | `{ "email", "password" }` | `200`, raw JWT text | `401` `Invalid Email Or Password`; soft-deleted users cannot authenticate |
 | `POST /api/auth/signup-email` | Public | `{ "email" }` | `200`, confirmation text | `400` `Email already registered!` |
 | `POST /api/auth/otp-validation` | Public | `{ "email", "otp": 123456 }` | `200`, `Valid OTP, Proceed` | `400` `Invalid Or Expired OTP` |
 | `POST /api/auth/signup` | Public | `{ "email", "password", "name", "otp" }` | `200`, raw JWT text | `400`, including duplicate email or invalid OTP |
 | `POST /api/auth/forgot-password` | Public | `{ "email" }` | `200`, generic OTP-sent text | Does not reveal whether an account exists |
-| `POST /api/auth/reset-password` | Public | `{ "email", "password", "otp" }` | `200`, raw JWT text | `400` with service error text |
+| `POST /api/auth/reset-password` | Public | `{ "email", "password", "otp" }` | `200`, raw JWT text | `400` with service error text; soft-deleted users cannot reset passwords |
 
 The Angular login and three-step registration pages already use the first four
 endpoints. The frontend must display raw backend error text when present,

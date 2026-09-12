@@ -16,6 +16,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
     @Query("""
+            select u
+            from User u
+            where u.email = :email and u.isDeleted = false
+            """)
+    Optional<User> findActiveByEmail(@Param("email") String email);
+
+    @Query("""
             select new com.knightdevelopers.kheerabackend.dto.UserResponse(u.id, u.name, u.email)
             from User u
             where u.isDeleted = false

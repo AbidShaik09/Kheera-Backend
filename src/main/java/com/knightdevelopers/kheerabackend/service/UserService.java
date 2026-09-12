@@ -33,7 +33,8 @@ public class UserService {
             throw new Exception("OTP is not verified");
         }
 
-        User existingUser= userRepository.findByEmail(resetPasswordRequest.getEmail()).get();
+        User existingUser = userRepository.findActiveByEmail(resetPasswordRequest.getEmail())
+                .orElseThrow(() -> new Exception("User not found"));
         existingUser.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
         userRepository.save(existingUser);
 
@@ -42,11 +43,8 @@ public class UserService {
     }
     @Transactional(readOnly = true)
     public String authenticateLoginRequest(LoginRequest loginRequest) throws Exception {
-        boolean isUserExists= userRepository.findByEmail(loginRequest.getEmail()).isPresent();
-        if(!isUserExists){
-            throw new Exception("Invalid Email Or Password");
-        }
-        User existingUser=userRepository.findByEmail(loginRequest.getEmail()).get();
+        User existingUser = userRepository.findActiveByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new Exception("Invalid Email Or Password"));
         boolean isAuthenticated= passwordEncoder.matches(loginRequest.getPassword(), existingUser.getPassword());
         if (!isAuthenticated){
 
@@ -63,7 +61,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean isAnExistingUser(String email){
-        return userRepository.findByEmail(email).isPresent();
+        return userRepository.findActiveByEmail(email).isPresent();
     }
     @Transactional
     public String createUser(SignUpRequest signUpRequest) throws Exception {
