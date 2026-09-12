@@ -49,8 +49,9 @@
    committed and pushed directly to `develop` when explicitly requested by the
    repository owner; they must not contain code, schema, runtime configuration,
    dependency, or generated artifact changes. Do not merge before code review
-   and required checks pass. Close the issue only after merge and any required
-   deployment check.
+   and required checks pass. After the PR is created, mark the GitHub issue
+   closed and keep any remaining review, CI, merge, or deployment follow-up on
+   the pull request.
 16. Everytime there is a change made to the CORE schema, create a new relevant migration
 17. Validation rules take precedence over delivery instructions. An instruction such as “push,” “create PR,” or “merge” does not imply permission to bypass any validation gate. If a required gate fails, stop the delivery process, report the failure, and fix it or request guidance.
 
@@ -73,7 +74,7 @@
    so future issues carry clearer scope, sequencing, branch, PR, or validation
    instructions.
 21. resulting pipeline becomes:
-Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → blocker/rule review → CI → review → merge to develop → dev deployment smoke check.
+Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → close issue → blocker/rule review → CI → review → merge to develop → dev deployment smoke check.
 
 If the worktree is dirty or the repository has no `develop` branch, stop before
 switching branches. Preserve existing work and resolve the branch baseline with
