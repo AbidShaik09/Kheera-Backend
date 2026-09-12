@@ -95,10 +95,19 @@ Spring/PostgreSQL.
 
 ### 5. Repository integration tests
 
-- [ ] [#48 Add PostgreSQL Testcontainers repository integration tests](https://github.com/AbidShaik09/Kheera-Backend/issues/48)
+- [ ] [#48 Add PostgreSQL Testcontainers repository integration tests](https://github.com/AbidShaik09/Kheera-Backend/issues/48) (in review)
 
 Depends on #44. Cover Flyway, PostgreSQL constraints, ordering, DTO projections,
 and membership isolation. This is the primary guard against future schema drift.
+PR [#62](https://github.com/AbidShaik09/Kheera-Backend/pull/62) review follow-up:
+the direct `EntityManager` duplicate-membership assertion now checks Hibernate's
+`ConstraintViolationException`, SQLSTATE `23505`, and `uq_space_member`.
+On 2026-09-12, all 34 tests passed with zero failures, errors, or skips using
+`mvnw.cmd clean verify` and the committed PostgreSQL 16 Testcontainers harness
+on Docker Desktop. Local backend startup and `/api/health` also pass.
+The PR workflow runs the same clean verification. Results are recorded on #62.
+Fresh review follow-up strengthens legacy null-timestamp OTP coverage and exact
+email queue filtering/ordering, including the send-time cutoff boundary.
 
 ### 6. MVC and middleware tests
 

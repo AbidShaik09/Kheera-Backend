@@ -155,6 +155,13 @@ Workflow definitions live in both deployment worktrees under `.github/workflows/
 
 The frontend also has a manual `workflow_dispatch` runner test that prints host, working directory, user, and Docker version.
 
+Backend PR #62 adds a separate `Verify Backend` pull-request workflow on
+GitHub-hosted Ubuntu with Java 21 and PostgreSQL Testcontainers. It runs Maven
+`verify` with read-only repository permissions and no deployment credentials.
+Local Docker-backed verification also passed on 2026-09-12. The self-hosted
+deployment workflows above still skip tests; enforcing deployment
+gates remains tracked in backend #50.
+
 ## Observed Repository State
 
 | Worktree | Observed branch / HEAD | Note |
