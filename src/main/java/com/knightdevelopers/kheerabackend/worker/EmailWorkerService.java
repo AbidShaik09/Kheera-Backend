@@ -4,7 +4,6 @@ import com.knightdevelopers.kheerabackend.entity.Email;
 import com.knightdevelopers.kheerabackend.repository.EmailRepository;
 import com.knightdevelopers.kheerabackend.service.EmailSenderService;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +13,13 @@ import java.util.List;
 @Service
 public class EmailWorkerService {
 
-    @Autowired
-    private EmailRepository emailRepository;
+    private final EmailRepository emailRepository;
+    private final EmailSenderService emailSenderService;
 
-    @Autowired
-    private EmailSenderService emailSenderService;
+    public EmailWorkerService(EmailRepository emailRepository, EmailSenderService emailSenderService) {
+        this.emailRepository = emailRepository;
+        this.emailSenderService = emailSenderService;
+    }
 
     @Scheduled(fixedDelay = 20000)
     @Transactional
@@ -41,7 +42,8 @@ public class EmailWorkerService {
 
             } catch (Exception ex) {
 
-                email.setTries(email.getTries() + 1);
+                int tries = email.getTries() == null ? 0 : email.getTries();
+                email.setTries(tries + 1);
 
                 if (email.getTries() >= 4) {
                     email.setIsFailed(true);

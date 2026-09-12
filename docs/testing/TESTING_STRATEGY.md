@@ -566,13 +566,15 @@ the blocker; do not push or resolve review comments on compilation alone.
 This requirement supersedes earlier Docker-unavailable verification exceptions.
 Record actual test counts and the verified commit on the PR.
 
-The backend deployment workflows currently execute:
+The backend deployment workflows run tests before deployment:
 
 ```text
-./mvnw clean package -DskipTests
+./mvnw clean package
 ```
 
-Change the pipeline in stages:
+Clean compilation prevents stale tests in persistent deployment checkouts.
+Test mail properties are supplied explicitly to the context test; no developer
+environment file or SMTP credentials are required. Keep the following gates:
 
 1. Pull request: `./mvnw test` for unit and controller tests.
 2. Pull request or protected branch: run PostgreSQL Testcontainers integration
