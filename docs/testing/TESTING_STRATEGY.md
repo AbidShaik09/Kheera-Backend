@@ -271,6 +271,13 @@ class SpaceMembersRepositoryTest extends PostgreSqlIntegrationTest {
 }
 ```
 
+Assert exceptions at the boundary exercised by the test. Direct `EntityManager`
+operations emit Hibernate/JPA exceptions; Spring Data repository operations
+translate them into Spring data-access exceptions. For the duplicate-membership
+native insert, verify `ConstraintViolationException`, SQLSTATE `23505`, and
+constraint name `uq_space_member` so another integrity failure cannot satisfy
+the test.
+
 ### `UserRepository`
 
 Test:
@@ -543,9 +550,15 @@ Change the pipeline in stages:
 4. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
-The test environment needs Java 21 and Docker/Testcontainers support. The local
-Windows environment used for this review does not currently have Java available,
-so `mvnw.cmd test` cannot bootstrap there.
+PR #62 adds `.github/workflows/verify.yml` to run the full Maven `verify`
+lifecycle on a GitHub-hosted Ubuntu runner with Java 21 and Docker for pull
+requests targeting `develop`. It uses the committed PostgreSQL 16 Testcontainers
+harness. Deployment gating remains part of #50.
+
+On 2026-09-12, the committed PostgreSQL 16 Testcontainers harness passed
+`mvnw.cmd clean verify` on local Docker Desktop: 34 tests, zero failures,
+zero errors, zero skipped. Earlier diagnostic runs against a substitute
+PostgreSQL instance are superseded by this Docker-backed verification.
 
 ## First Implementation Batch
 

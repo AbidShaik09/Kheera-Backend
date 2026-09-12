@@ -6,11 +6,11 @@ import com.knightdevelopers.kheerabackend.entity.space.SpaceMembers;
 import com.knightdevelopers.kheerabackend.entity.space.SpaceRoles;
 import com.knightdevelopers.kheerabackend.entity.space.Spaces;
 import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -70,17 +70,19 @@ class SpaceMembersRepositoryIntegrationTest extends PostgreSqlIntegrationTest {
         SpaceRoles role = space.getRoles().getFirst();
         entityManager.flush();
 
-        assertThatThrownBy(() -> {
-            entityManager.createNativeQuery("""
+        // Direct EntityManager calls do not pass through Spring's repository exception translation.
+        assertThatThrownBy(() -> entityManager.createNativeQuery("""
                             insert into space_members (user_id, space_id, space_role_id)
                             values (:userId, :spaceId, :roleId)
                             """)
                     .setParameter("userId", owner.getId())
                     .setParameter("spaceId", space.getId())
                     .setParameter("roleId", role.getId())
-                    .executeUpdate();
-            entityManager.flush();
-        }).isInstanceOf(DataIntegrityViolationException.class);
+                    .executeUpdate())
+                .isInstanceOfSatisfying(ConstraintViolationException.class, exception -> {
+                    assertThat(exception.getSQLState()).isEqualTo("23505");
+                    assertThat(exception.getConstraintName()).isEqualTo("uq_space_member");
+                });
     }
 
     private Spaces persistSpaceWithOwner(String name, User owner) {
