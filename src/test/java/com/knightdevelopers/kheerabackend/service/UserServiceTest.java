@@ -2,10 +2,12 @@ package com.knightdevelopers.kheerabackend.service;
 
 import com.knightdevelopers.kheerabackend.dto.LoginRequest;
 import com.knightdevelopers.kheerabackend.dto.ResetPasswordRequest;
+import com.knightdevelopers.kheerabackend.dto.SignUpRequest;
 import com.knightdevelopers.kheerabackend.dto.UserResponse;
 import com.knightdevelopers.kheerabackend.entity.User;
 import com.knightdevelopers.kheerabackend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -66,6 +68,69 @@ class UserServiceTest {
     }
 
     @Test
+    void authenticateLoginRequestRejectsWrongPassword() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("member@example.com");
+        request.setPassword("wrong-password");
+        User user = new User("member@example.com", "encoded-password", "Member");
+        when(userRepository.findActiveByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.authenticateLoginRequest(request))
+                .isInstanceOf(Exception.class)
+                .hasMessage("Invalid Email Or Password");
+
+        verify(authenticationService, never()).generateToken(any());
+    }
+
+    @Test
+    void createUserRejectsDuplicateEmail() {
+        SignUpRequest request = signUpRequest();
+        when(userRepository.findActiveByEmail(request.getEmail())).thenReturn(Optional.of(new User()));
+
+        assertThatThrownBy(() -> userService.createUser(request))
+                .isInstanceOf(Exception.class)
+                .hasMessage("Email already registered!");
+
+        verify(otpVerificationService, never()).validateOtp(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void createUserRejectsInvalidOtp() {
+        SignUpRequest request = signUpRequest();
+        when(userRepository.findActiveByEmail(request.getEmail())).thenReturn(Optional.empty());
+        when(otpVerificationService.validateOtp(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.createUser(request))
+                .isInstanceOf(Exception.class)
+                .hasMessage("User Email is not verified");
+
+        verify(userRepository, never()).save(any());
+        verify(authenticationService, never()).generateToken(any());
+    }
+
+    @Test
+    void createUserEncodesPasswordAndReturnsTokenWhenOtpIsValid() throws Exception {
+        SignUpRequest request = signUpRequest();
+        when(userRepository.findActiveByEmail(request.getEmail())).thenReturn(Optional.empty());
+        when(otpVerificationService.validateOtp(any())).thenReturn(true);
+        when(passwordEncoder.encode(request.getPassword())).thenReturn("encoded-password");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(authenticationService.generateToken(request.getEmail())).thenReturn("jwt-token");
+
+        String token = userService.createUser(request);
+
+        assertThat(token).isEqualTo("jwt-token");
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getEmail()).isEqualTo(request.getEmail());
+        assertThat(userCaptor.getValue().getName()).isEqualTo(request.getName());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo("encoded-password");
+        verify(passwordEncoder).encode(request.getPassword());
+    }
+
+    @Test
     void resetUserPasswordUpdatesOnlyActiveUser() throws Exception {
         ResetPasswordRequest request = new ResetPasswordRequest();
         request.setEmail("member@example.com");
@@ -86,6 +151,22 @@ class UserServiceTest {
     }
 
     @Test
+    void resetUserPasswordRejectsInvalidOtp() {
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setEmail("member@example.com");
+        request.setPassword("new-password");
+        request.setOtp(123456L);
+        when(otpVerificationService.validateOtp(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.resetUserPassword(request))
+                .isInstanceOf(Exception.class)
+                .hasMessage("OTP is not verified");
+
+        verify(userRepository, never()).findActiveByEmail(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void getUsersReturnsRepositoryDtoProjection() {
         List<UserResponse> expectedUsers = List.of(
                 new UserResponse(UUID.randomUUID(), "Member", "member@example.com")
@@ -96,5 +177,14 @@ class UserServiceTest {
 
         assertThat(users).isEqualTo(expectedUsers);
         verify(userRepository).findActiveUserSummaries();
+    }
+
+    private static SignUpRequest signUpRequest() {
+        SignUpRequest request = new SignUpRequest();
+        request.setName("Member");
+        request.setEmail("member@example.com");
+        request.setPassword("plain-password");
+        request.setOtp(123456L);
+        return request;
     }
 }

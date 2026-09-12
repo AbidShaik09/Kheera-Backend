@@ -65,6 +65,9 @@ public class UserService {
     }
     @Transactional
     public String createUser(SignUpRequest signUpRequest) throws Exception {
+        if (userRepository.findActiveByEmail(signUpRequest.getEmail()).isPresent()) {
+            throw new Exception("Email already registered!");
+        }
 
         OtpValidationRequest otpValidationRequest=new OtpValidationRequest();
         otpValidationRequest.setOtp(signUpRequest.getOtp());
