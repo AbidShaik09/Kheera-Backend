@@ -106,6 +106,8 @@ On 2026-09-12, all 34 tests passed with zero failures, errors, or skips using
 `mvnw.cmd clean verify` and the committed PostgreSQL 16 Testcontainers harness
 on Docker Desktop. Local backend startup and `/api/health` also pass.
 The PR workflow runs the same clean verification. Results are recorded on #62.
+Fresh review follow-up strengthens legacy null-timestamp OTP coverage and exact
+email queue filtering/ordering, including the send-time cutoff boundary.
 
 ### 6. MVC and middleware tests
 

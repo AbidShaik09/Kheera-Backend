@@ -21,20 +21,23 @@ class OtpRepositoryIntegrationTest extends PostgreSqlIntegrationTest {
     private OtpRepository otpRepository;
 
     @Test
-    void newestOtpForEmailIgnoresOlderAndOtherEmailRecords() {
+    void newestOtpForEmailIgnoresOlderOtherEmailAndLegacyNullTimestampRecords() {
         OneTimePassword older = otp("person@example.com", 111111L, Instant.parse("2026-01-01T10:00:00Z"));
         OneTimePassword newest = otp("person@example.com", 222222L, Instant.parse("2026-01-02T10:00:00Z"));
         OneTimePassword otherUser = otp("other@example.com", 333333L, Instant.parse("2026-01-03T10:00:00Z"));
+        OneTimePassword legacy = otp("person@example.com", 444444L, Instant.parse("2026-01-04T10:00:00Z"));
+        legacy.setCreatedAt(null);
         otpRepository.save(older);
         otpRepository.save(newest);
         otpRepository.save(otherUser);
+        otpRepository.save(legacy);
         otpRepository.flush();
 
         assertThat(otpRepository.findTopByEmailAndCreatedAtIsNotNullOrderByCreatedAtDesc("person@example.com"))
                 .hasValueSatisfying(found -> assertThat(found.getOtp()).isEqualTo(222222L));
         assertThat(otpRepository.findByEmail("person@example.com"))
                 .extracting(OneTimePassword::getOtp)
-                .containsExactlyInAnyOrder(111111L, 222222L);
+                .containsExactlyInAnyOrder(111111L, 222222L, 444444L);
     }
 
     @Test

@@ -8,7 +8,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,28 +26,29 @@ class EmailRepositoryIntegrationTest extends PostgreSqlIntegrationTest {
     @Test
     void pendingQueueFiltersOrdersAndLimitsResults() {
         Instant now = Instant.parse("2026-01-02T12:00:00Z");
-        emailRepository.save(email("sent@example.com", true, false, false, now.minusSeconds(60)));
-        emailRepository.save(email("failed@example.com", false, true, false, now.minusSeconds(60)));
-        emailRepository.save(email("future@example.com", false, false, true, now.plusSeconds(60)));
+        // Excluded rows would outrank eligible rows if any filtering predicate regressed.
+        Email sent = emailRepository.save(email("sent@example.com", true, false, true, now.minusSeconds(300)));
+        Email failed = emailRepository.save(email("failed@example.com", false, true, true, now.minusSeconds(240)));
+        Email future = emailRepository.save(email("future@example.com", false, false, true, now.plusSeconds(60)));
+        Email atCutoff = emailRepository.save(email("cutoff@example.com", false, false, true, now));
         Email urgentLater = emailRepository.save(email("urgent-later@example.com", false, false, true, now.minusSeconds(60)));
         Email urgentEarlier = emailRepository.save(email("urgent-earlier@example.com", false, false, true, now.minusSeconds(120)));
         Email normalEarlier = emailRepository.save(email("normal-earlier@example.com", false, false, false, now.minusSeconds(180)));
 
+        List<UUID> expectedIds = new ArrayList<>(List.of(urgentEarlier.getId(), urgentLater.getId(), normalEarlier.getId()));
         for (int index = 0; index < 25; index++) {
-            emailRepository.save(email("bulk-" + index + "@example.com", false, false, false, now.minusSeconds(120 - index)));
+            Email bulk = emailRepository.save(email("bulk-" + index + "@example.com", false, false, false, now.minusSeconds(120 - index)));
+            if (index < 17) {
+                expectedIds.add(bulk.getId());
+            }
         }
         emailRepository.flush();
 
         assertThat(emailRepository.findTop20ByIsSentFalseAndIsFailedFalseAndSendAtBeforeOrderByIsUrgentDescSendAtAsc(Date.from(now)))
                 .hasSize(20)
                 .extracting(Email::getId)
-                .startsWith(urgentEarlier.getId(), urgentLater.getId())
-                .contains(normalEarlier.getId())
-                .doesNotContain(emailRepository.findAll().stream()
-                        .filter(email -> email.getRecipientEmail().equals("sent@example.com"))
-                        .findFirst()
-                        .orElseThrow()
-                        .getId());
+                .containsExactlyElementsOf(expectedIds)
+                .doesNotContain(sent.getId(), failed.getId(), future.getId(), atCutoff.getId());
     }
 
     private static Email email(String recipient, boolean sent, boolean failed, boolean urgent, Instant sendAt) {

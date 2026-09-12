@@ -278,6 +278,13 @@ native insert, verify `ConstraintViolationException`, SQLSTATE `23505`, and
 constraint name `uq_space_member` so another integrity failure cannot satisfy
 the test.
 
+OTP ordering coverage includes a same-email legacy row with a null timestamp,
+which must not supersede a dated OTP. Queue coverage places excluded sent and
+failed rows ahead of eligible rows, includes future and exact-cutoff rows, and
+asserts the complete ordered twenty-row result. This makes each filter and the
+window limit observable instead of allowing excluded rows to fall outside the
+window accidentally.
+
 ### `UserRepository`
 
 Test:
