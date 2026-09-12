@@ -95,10 +95,12 @@ Spring/PostgreSQL.
 
 ### 5. Repository integration tests
 
-- [ ] [#48 Add PostgreSQL Testcontainers repository integration tests](https://github.com/AbidShaik09/Kheera-Backend/issues/48)
+- [ ] [#48 Add PostgreSQL Testcontainers repository integration tests](https://github.com/AbidShaik09/Kheera-Backend/issues/48) (in review)
 
 Depends on #44. Cover Flyway, PostgreSQL constraints, ordering, DTO projections,
 and membership isolation. This is the primary guard against future schema drift.
+Local `test-compile` passed; full Testcontainers execution requires a
+Docker-capable runner.
 
 ### 6. MVC and middleware tests
 
