@@ -155,6 +155,16 @@ Workflow definitions live in both deployment worktrees under `.github/workflows/
 
 The frontend also has a manual `workflow_dispatch` runner test that prints host, working directory, user, and Docker version.
 
+PR #63 replaces wildcard credentialed CORS with exact browser-origin allowlists.
+Production Compose defaults to `https://kheera.theknightdevelopers.online`;
+development Compose defaults to `https://dev.kheera.theknightdevelopers.online`.
+Override Compose interpolation with `CORS_ALLOWED_ORIGINS` for production or
+`DEV_CORS_ALLOWED_ORIGINS` for development in the invoking shell or Compose
+environment file (`--env-file`); values are comma-separated exact origins.
+Compose passes the result as `CORS_ALLOWED_ORIGINS` to the backend container.
+Standalone Java startup reads `CORS_ALLOWED_ORIGINS` directly and otherwise
+allows only `http://localhost:4200`. The settings are implemented on the PR;
+deployment and deployed-browser smoke verification remain pending merge.
 Backend PR #62 adds a separate `Verify Backend` pull-request workflow on
 GitHub-hosted Ubuntu with Java 21 and PostgreSQL Testcontainers. It runs Maven
 `verify` with read-only repository permissions and no deployment credentials.

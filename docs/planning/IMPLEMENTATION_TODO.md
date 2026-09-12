@@ -111,11 +111,12 @@ email queue filtering/ordering, including the send-time cutoff boundary.
 
 ### 6. MVC and middleware tests
 
-- [ ] [#49 Add MockMvc tests for implemented controllers and JWT security](https://github.com/AbidShaik09/Kheera-Backend/issues/49)
+- [ ] [#49 Add MockMvc tests for implemented controllers and JWT security](https://github.com/AbidShaik09/Kheera-Backend/issues/49) (in review)
 
 Depends on #43 for the final space-list regression test. Verify exact current
 authentication response contracts because the Angular client consumes raw text
-from auth endpoints.
+from auth endpoints. Full `mvnw verify` passes with MockMvc coverage for auth,
+user, space, health, JWT, security, and CORS behavior. Clean verification now passes 41 tests with zero skips, including current-user token rejection and allowed/rejected CORS origins.
 
 ### 7. Email worker tests and CI gate
 
