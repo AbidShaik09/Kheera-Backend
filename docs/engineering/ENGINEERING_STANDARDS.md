@@ -45,18 +45,52 @@
    authorization, validation, errors, concurrency, logging, secrets, and API
    compatibility. Run the relevant test suite and the full backend build. 
 15. When asked to push, push only the issue branch and create a pull request to
-   `develop`, never `main`. Do not merge before code review and required checks
-   pass. Close the issue only after merge and any required deployment check. 
+   `develop`, never `main`. Documentation-only rule/process updates may be
+   committed and pushed directly to `develop` when explicitly requested by the
+   repository owner; they must not contain code, schema, runtime configuration,
+   dependency, or generated artifact changes. Do not merge before code review
+   and required checks pass. Close the issue only after merge and any required
+   deployment check.
 16. Everytime there is a change made to the CORE schema, create a new relevant migration
 17. Validation rules take precedence over delivery instructions. An instruction such as “push,” “create PR,” or “merge” does not imply permission to bypass any validation gate. If a required gate fails, stop the delivery process, report the failure, and fix it or request guidance.
 
 
-18. resulting pipeline becomes:
-Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → CI → review → merge to develop → dev deployment smoke check.
+18. If a required networked command fails because of sandbox or environment
+   restrictions, retry the same command with the proper escalation/permission
+   request before changing the implementation plan. Examples include
+   `git fetch`, `git push`, Maven dependency downloads, and required local
+   verification that cannot complete without network access. Record the reason
+   in the progress update or PR verification notes when it affects delivery.
+19. After every PR is created, identify any blockers, friction, or repeated
+   failure pattern from the issue. Decide whether a new or updated rule would
+   make similar future work easier, safer, or less ambiguous. If yes, update
+   the relevant engineering, documentation, testing, or issue-creation rule
+   before considering the task complete.
+20. If the user stops execution and says the AI was not on the right track,
+   pause implementation work and identify the root cause of the
+   misunderstanding. Before resuming similar implementation work, update the
+   relevant documentation, GitHub issue creation rules, or implementation rules
+   so future issues carry clearer scope, sequencing, branch, PR, or validation
+   instructions.
+21. resulting pipeline becomes:
+Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → blocker/rule review → CI → review → merge to develop → dev deployment smoke check.
 
 If the worktree is dirty or the repository has no `develop` branch, stop before
 switching branches. Preserve existing work and resolve the branch baseline with
 the repository owner first.
+
+## GitHub Issue Creation Rules
+
+- Each issue must state whether it needs its own branch and PR, or whether it
+  may be grouped with another issue. If separate PRs are required, say so in
+  the issue before implementation begins.
+- Each issue must define acceptance criteria, affected contracts/docs, required
+  verification, and known blockers or dependencies.
+- If a previous attempt was stopped because the implementation direction was
+  wrong, the follow-up issue or rule update must name the misunderstanding and
+  the instruction that would have prevented it.
+- Issue descriptions should call out workflow exceptions explicitly, including
+  docs-only direct-to-`develop` updates approved by the repository owner.
 
 ## Design and Code Rules
 

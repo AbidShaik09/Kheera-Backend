@@ -11,6 +11,7 @@ module, repository, environment, or future implementation choice.
 | 2026-09-11 | Treat Flyway migrations as the database source of truth and use Hibernate validation rather than schema generation. | Active | Preserves reproducible schema history across development and production. | `../../architecture/DATABASE_DESIGN.md`. |
 | 2026-09-11 | Require semantic design tokens with light and dark modes; future named themes are token overrides. | Active | Prevents page-specific styling drift and makes themes scalable. | [Frontend style guide](https://github.com/AbidShaik09/Kheera-Frontend/blob/develop/docs/design/STYLE_GUIDE.md). |
 | 2026-09-11 | Maintain architecture, progress, change history, and ownership-specific documentation with every material change. | Active | Keeps implementation, operations, and roadmap state discoverable and current. | `../governance/DOCUMENTATION_STANDARDS.md`. |
+| 2026-09-12 | Allow explicitly requested documentation-only rule/process updates to push directly to `develop`, and require post-PR blocker/rule review. | Active | Keeps workflow corrections lightweight while preserving branch-and-PR discipline for code, schema, configuration, dependencies, and generated artifacts. | `../../engineering/ENGINEERING_STANDARDS.md`, `../governance/DOCUMENTATION_STANDARDS.md`. |
 
 When a decision is superseded, add a new row that links to the replacement and
 mark the old decision `Superseded`; do not rewrite history.

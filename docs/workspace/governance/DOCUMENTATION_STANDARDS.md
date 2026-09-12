@@ -7,6 +7,12 @@ infrastructure change, dependency upgrade, or user-visible behavior update must
 update the documentation it affects. Documentation work is part of the issue's
 acceptance criteria and Definition of Done, not follow-up work.
 
+Documentation-only rule/process updates are the one approved exception to the
+usual no-direct-push workflow. When the repository owner explicitly requests a
+docs-only rule update, it may be committed and pushed directly to `develop`.
+This exception must not include application code, schema, runtime configuration,
+dependency, generated artifact, or production-secret changes.
+
 ## Required Documents by Change Type
 
 | Change | Required updates |
@@ -28,7 +34,11 @@ acceptance criteria and Definition of Done, not follow-up work.
    document together with the behavior it describes.
 3. Before opening a PR: verify documentation matches the implementation and
    current tests. Include the document paths in the PR description.
-4. After merge or deployment: update the application-progress status and add
+4. After creating a PR: record any blockers, friction, or repeated
+   misunderstandings discovered during the issue. If a rule change would reduce
+   the chance of recurrence, update the relevant standards before closing the
+   task.
+5. After merge or deployment: update the application-progress status and add
    one dated history row for a material change.
 
 ## Progress and History Rules
