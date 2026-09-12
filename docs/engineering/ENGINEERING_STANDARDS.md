@@ -1,5 +1,38 @@
 # Backend Engineering Standards
 
+## Mandatory Develop Synchronization
+
+Before starting any implementation or documentation edit, including TODO updates,
+issue planning, and docs-only direct pushes, use a clean checkout and synchronize
+`develop` with GitHub. Being on `develop` or having a cached `origin/develop`
+reference is not proof that the branch is current.
+
+1. Check `git status --short`. Preserve existing changes; use a separate clean
+   checkout/worktree when needed. Never reset, discard, or overwrite user work.
+2. Check out `develop`, then run `git fetch origin develop` and
+   `git merge --ff-only origin/develop`. If local `develop` does not exist,
+   fetch first and create it tracking `origin/develop`, then repeat the sync.
+3. Verify `git rev-parse HEAD` equals `git rev-parse origin/develop` and the
+   worktree is clean. If fetching fails, fast-forwarding fails, or local
+   `develop` is ahead/diverged, resolve the baseline before editing. Never
+   treat a failed fetch as permission to use stale code or documentation.
+4. Read the current rules, API contracts, and relevant implementation from this
+   synchronized baseline before making decisions or edits.
+5. For a new GitHub issue implementation, create
+   `issue/<number>_<short-kebab-title>` only from this verified latest
+   `develop`. Refresh and verify again immediately before branch creation if
+   other work has intervened. Never branch from `main`, an old issue branch,
+   or an unrefreshed local/tracking branch.
+6. For resumed issue work, fetch current `develop` and integrate it into the
+   existing issue branch before new edits, preserving its commits and resolving
+   conflicts. Do not recreate the issue branch or discard its work.
+
+Docs-only changes follow the standing direct-to-`develop` push instruction;
+they are not exempt from this synchronization rule. Inspect the diff and verify
+documentation before committing. If the remote advances before the push, fetch,
+integrate the new commits safely, and recheck the result; never force-push.
+
+
 ## Mandatory Delivery Flow
 
 1. Create or confirm a GitHub issue before changing a feature, bug, security
@@ -55,8 +88,11 @@
    compatibility. Run the relevant test suite and the full backend build. 
 15. When asked to push, push only the issue branch and create a pull request to
    `develop`, never `main`. After checking the diff, if the change contains
-   only documentation or workflow-rule text and was explicitly requested by the
-   repository owner, update `docs/workspace/progress/CHANGE_HISTORY.md`, commit
+   only documentation or workflow-rule text, the repository owner's standing
+   instruction is to push it directly to `develop`, including documentation
+   produced while completing an authorized task. Do not require a separate
+   push request or leave completed docs-only updates uncommitted. Update
+   `docs/workspace/progress/CHANGE_HISTORY.md`, commit
    the docs-only change, and push it directly to `develop`. Docs-only direct
    pushes must not contain code, schema, runtime configuration, dependency, or
    generated artifact changes. Do not merge before code review and required

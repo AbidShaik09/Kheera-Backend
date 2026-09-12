@@ -1,5 +1,17 @@
 # Kheera Backend Testing Strategy
 
+## Docker API Compatibility
+
+Use the Testcontainers 1.21.4 BOM for all Testcontainers modules. Version 1.20.4
+sent Docker API 1.32, which the development host rejected (minimum 1.40) in
+deployment run 34723314984 after PR #64 enabled tests. The upstream 1.21.4
+release restores compatibility with recent Docker Engines:
+https://github.com/testcontainers/testcontainers-java/releases/tag/1.21.4.
+Keep PostgreSQL tests and clean builds enabled; do not lower the Docker daemon
+API minimum or skip tests to work around client incompatibility. Validate with
+`docker info` and `./mvnw clean verify`; dependency compatibility must be checked
+on the deployment runner as well as the local machine. Tracked by #71.
+
 ## Purpose
 
 This guide defines the ideal automated-test approach for the current Kheera
@@ -566,13 +578,15 @@ the blocker; do not push or resolve review comments on compilation alone.
 This requirement supersedes earlier Docker-unavailable verification exceptions.
 Record actual test counts and the verified commit on the PR.
 
-The backend deployment workflows currently execute:
+The backend deployment workflows run tests before deployment:
 
 ```text
-./mvnw clean package -DskipTests
+./mvnw clean package
 ```
 
-Change the pipeline in stages:
+Clean compilation prevents stale tests in persistent deployment checkouts.
+Test mail properties are supplied explicitly to the context test; no developer
+environment file or SMTP credentials are required. Keep the following gates:
 
 1. Pull request: `./mvnw test` for unit and controller tests.
 2. Pull request or protected branch: run PostgreSQL Testcontainers integration
