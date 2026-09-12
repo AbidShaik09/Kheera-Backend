@@ -165,6 +165,12 @@ Compose passes the result as `CORS_ALLOWED_ORIGINS` to the backend container.
 Standalone Java startup reads `CORS_ALLOWED_ORIGINS` directly and otherwise
 allows only `http://localhost:4200`. The settings are implemented on the PR;
 deployment and deployed-browser smoke verification remain pending merge.
+Backend PR #62 adds a separate `Verify Backend` pull-request workflow on
+GitHub-hosted Ubuntu with Java 21 and PostgreSQL Testcontainers. It runs Maven
+`verify` with read-only repository permissions and no deployment credentials.
+Local Docker-backed verification also passed on 2026-09-12. The self-hosted
+deployment workflows above still skip tests; enforcing deployment
+gates remains tracked in backend #50.
 
 ## Observed Repository State
 
