@@ -39,8 +39,17 @@
    API/schema/design records during implementation; update progress and history
    after a material merge or deployment. 
 13. During implementation, run the tests relevant to the changed behavior frequently. Before a PR is considered ready, run the entire backend unit test suite and ./mvnw verify.  
-    Tests may only be skipped when the repository owner explicitly identifies the specific test or test category that may be skipped. An instruction to skip a test never means skip build, compilation, local startup, smoke testing, security checks, self-review, or other validation.  
-    Any skipped test must be listed in the PR with the reason it was skipped.
+    Docker-backed and Testcontainers tests are mandatory. Run `docker info` and
+    `./mvnw clean verify` against the committed test harness before pushing,
+    resolving review comments, or declaring a PR ready. All tests must execute
+    with zero skipped tests. Do not use `-DskipTests`, `-Dmaven.test.skip=true`,
+    test exclusions, `disabledWithoutDocker`, or a substitute database harness
+    to bypass Docker tests. A missing or inaccessible Docker engine is a
+    verification blocker to fix, never a passing or skipped result. Retry
+    sandbox-restricted Docker access with the appropriate permissions.
+    Earlier Docker-unavailable exceptions are superseded by this rule.
+    After merging upstream changes or resolving conflicts, rerun clean
+    verification on the resulting branch and record the command and test counts.
 14. Before requesting a push, self-review the diff for correctness, edge cases,
    authorization, validation, errors, concurrency, logging, secrets, and API
    compatibility. Run the relevant test suite and the full backend build. 
