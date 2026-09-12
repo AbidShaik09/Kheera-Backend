@@ -176,6 +176,9 @@ class ControllerSecurityMockMvcTest {
         EmailRequest known = new EmailRequest();
         known.setEmail("known@example.com");
         when(userService.isAnExistingUser("known@example.com")).thenReturn(true);
+        EmailRequest unknown = new EmailRequest();
+        unknown.setEmail("unknown@example.com");
+        when(userService.isAnExistingUser("unknown@example.com")).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,7 +186,14 @@ class ControllerSecurityMockMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("OTP has Been Sent To Your Email"));
 
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(unknown)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("OTP has Been Sent To Your Email"));
+
         verify(otpVerificationService).sendPasswordResetOTPtoEmail("known@example.com");
+        verify(otpVerificationService, never()).sendPasswordResetOTPtoEmail("unknown@example.com");
     }
 
     @Test
@@ -241,13 +251,13 @@ class ControllerSecurityMockMvcTest {
     @Test
     void missingMalformedAndInvalidBearerTokensCannotAccessProtectedEndpoints() throws Exception {
         mockMvc.perform(get("/api/spaces"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/spaces").header(HttpHeaders.AUTHORIZATION, "Basic abc"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/spaces").header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         verify(spaceService, never()).getSpacesForUserEmail(any());
     }
