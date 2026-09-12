@@ -87,7 +87,7 @@ owner-authorized no-review delivery decision.
 
 ### 4. Service unit tests
 
-- [ ] [#47 Add unit tests for authentication, user, and OTP services](https://github.com/AbidShaik09/Kheera-Backend/issues/47)
+- [ ] [#47 Add unit tests for authentication, user, and OTP services](https://github.com/AbidShaik09/Kheera-Backend/issues/47) (in review)
 
 Implement this after phase 1. Preserve the focused #51 regression case here as
 part of the wider OTP service coverage. Keep these tests fast and independent of

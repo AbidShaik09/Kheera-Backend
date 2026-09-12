@@ -3,6 +3,7 @@ package com.knightdevelopers.kheerabackend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knightdevelopers.kheerabackend.config.CorsConfig;
 import com.knightdevelopers.kheerabackend.config.SecurityConfig;
+import com.knightdevelopers.kheerabackend.config.TimeConfig;
 import com.knightdevelopers.kheerabackend.dto.*;
 import com.knightdevelopers.kheerabackend.security.JwtAuthenticationFilter;
 import com.knightdevelopers.kheerabackend.service.AuthenticationService;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({
         SecurityConfig.class,
         CorsConfig.class,
+        TimeConfig.class,
         JwtAuthenticationFilter.class,
         AuthenticationService.class
 })

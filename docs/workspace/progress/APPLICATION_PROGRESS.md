@@ -8,7 +8,7 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | --- | --- | --- | --- |
 | Documentation and engineering workflow | Implemented | Backend [#52](https://github.com/AbidShaik09/Kheera-Backend/issues/52), frontend [#66](https://github.com/AbidShaik09/Kheera-Frontend/issues/66). | Adopt rules on every new issue and PR. |
 | Authentication UI | Implemented locally | Login, sign-up, and password reset are integrated with existing auth endpoints. | Verify against corrected OTP behavior and deployment configuration. |
-| Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51). | Add regression coverage in #47. |
+| Password-reset OTP integrity | Implemented | Backend [#51](https://github.com/AbidShaik09/Kheera-Backend/issues/51), [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47). | Merge #47 unit regression coverage. |
 | Schema and persistence alignment | Implemented | Backend [#44](https://github.com/AbidShaik09/Kheera-Backend/issues/44). | Preserve the aligned Flyway/JPA baseline as new persistence features are added. |
 | Authenticated space list | In review | Backend [#43](https://github.com/AbidShaik09/Kheera-Backend/issues/43). | Verify PR checks and merge after review. |
 | Test and CI baseline | In review | Backend [#47](https://github.com/AbidShaik09/Kheera-Backend/issues/47), [#48](https://github.com/AbidShaik09/Kheera-Backend/issues/48), [#49](https://github.com/AbidShaik09/Kheera-Backend/issues/49), [#50](https://github.com/AbidShaik09/Kheera-Backend/issues/50). | Merge service, PostgreSQL repository, and MVC/security coverage, then complete worker and CI coverage. |

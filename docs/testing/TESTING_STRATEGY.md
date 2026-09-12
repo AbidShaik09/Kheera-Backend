@@ -528,6 +528,27 @@ development or production PostgreSQL database.
 
 ## CI Policy
 
+PR #63 supplies explicit localhost mail settings to the full-context test so
+it starts without an ignored environment file or SMTP credentials. The MVC
+security slice imports `TimeConfig` alongside the real `AuthenticationService`
+to satisfy its clock dependency after merging the service-test baseline.
+The complete clean verification passes 39 tests with zero skips; the shared
+`Verify Backend` PR workflow runs the same command on Ubuntu with Docker.
+
+### Mandatory Docker verification
+
+Docker-backed tests must run locally and in CI whenever they are present on
+the branch. Verify the engine with `docker info`, then run
+`./mvnw clean verify` (Windows: `.\mvnw.cmd clean verify`) against the
+committed test harness. Require zero failures, zero errors, and zero skipped
+tests. Repeat clean verification after upstream merges and conflict resolution.
+Do not disable Testcontainers, exclude repository tests, use skip flags, or
+replace the container connection with a local database to claim verification.
+If Docker is unavailable or access is denied, fix the environment or report
+the blocker; do not push or resolve review comments on compilation alone.
+This requirement supersedes earlier Docker-unavailable verification exceptions.
+Record actual test counts and the verified commit on the PR.
+
 The backend deployment workflows currently execute:
 
 ```text
@@ -543,9 +564,9 @@ Change the pipeline in stages:
 4. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
-The test environment needs Java 21 and Docker/Testcontainers support. The local
-Windows environment used for this review does not currently have Java available,
-so `mvnw.cmd test` cannot bootstrap there.
+The test environment needs Java 21 and Docker/Testcontainers support. Both are
+available on the local Windows host as of 2026-09-12. Per-user Docker Desktop
+may require running the command with access to the user's Docker named pipe.
 
 ## First Implementation Batch
 

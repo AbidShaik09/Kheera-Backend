@@ -39,19 +39,29 @@
    API/schema/design records during implementation; update progress and history
    after a material merge or deployment. 
 13. During implementation, run the tests relevant to the changed behavior frequently. Before a PR is considered ready, run the entire backend unit test suite and ./mvnw verify.  
-    Tests may only be skipped when the repository owner explicitly identifies the specific test or test category that may be skipped. An instruction to skip a test never means skip build, compilation, local startup, smoke testing, security checks, self-review, or other validation.  
-    Any skipped test must be listed in the PR with the reason it was skipped.
+    Docker-backed and Testcontainers tests are mandatory. Run `docker info` and
+    `./mvnw clean verify` against the committed test harness before pushing,
+    resolving review comments, or declaring a PR ready. All tests must execute
+    with zero skipped tests. Do not use `-DskipTests`, `-Dmaven.test.skip=true`,
+    test exclusions, `disabledWithoutDocker`, or a substitute database harness
+    to bypass Docker tests. A missing or inaccessible Docker engine is a
+    verification blocker to fix, never a passing or skipped result. Retry
+    sandbox-restricted Docker access with the appropriate permissions.
+    Earlier Docker-unavailable exceptions are superseded by this rule.
+    After merging upstream changes or resolving conflicts, rerun clean
+    verification on the resulting branch and record the command and test counts.
 14. Before requesting a push, self-review the diff for correctness, edge cases,
    authorization, validation, errors, concurrency, logging, secrets, and API
    compatibility. Run the relevant test suite and the full backend build. 
 15. When asked to push, push only the issue branch and create a pull request to
-   `develop`, never `main`. Documentation-only rule/process updates may be
-   committed and pushed directly to `develop` when explicitly requested by the
-   repository owner; they must not contain code, schema, runtime configuration,
-   dependency, or generated artifact changes. Do not merge before code review
-   and required checks pass. After the PR is created, mark the GitHub issue
-   closed and keep any remaining review, CI, merge, or deployment follow-up on
-   the pull request.
+   `develop`, never `main`. After checking the diff, if the change contains
+   only documentation or workflow-rule text and was explicitly requested by the
+   repository owner, update `docs/workspace/progress/CHANGE_HISTORY.md`, commit
+   the docs-only change, and push it directly to `develop`. Docs-only direct
+   pushes must not contain code, schema, runtime configuration, dependency, or
+   generated artifact changes. Do not merge before code review and required
+   checks pass. After the PR is created, mark the GitHub issue closed and keep
+   any remaining review, CI, merge, or deployment follow-up on the pull request.
 16. Everytime there is a change made to the CORE schema, create a new relevant migration
 17. Validation rules take precedence over delivery instructions. An instruction such as “push,” “create PR,” or “merge” does not imply permission to bypass any validation gate. If a required gate fails, stop the delivery process, report the failure, and fix it or request guidance.
 
@@ -67,14 +77,17 @@
    make similar future work easier, safer, or less ambiguous. If yes, update
    the relevant engineering, documentation, testing, or issue-creation rule
    before considering the task complete.
-20. If the user stops execution and says the AI was not on the right track,
+20. After fixing and resolving GitHub PR review comments, always add a new PR
+   comment containing exactly `@codex review` so Codex performs a fresh review
+   of the updated pull request.
+21. If the user stops execution and says the AI was not on the right track,
    pause implementation work and identify the root cause of the
    misunderstanding. Before resuming similar implementation work, update the
    relevant documentation, GitHub issue creation rules, or implementation rules
    so future issues carry clearer scope, sequencing, branch, PR, or validation
    instructions.
-21. resulting pipeline becomes:
-Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → close issue → blocker/rule review → CI → review → merge to develop → dev deployment smoke check.
+22. resulting pipeline becomes:
+Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → close issue → blocker/rule review → CI → review → resolve comments → @codex review → merge to develop → dev deployment smoke check.
 
 If the worktree is dirty or the repository has no `develop` branch, stop before
 switching branches. Preserve existing work and resolve the branch baseline with
