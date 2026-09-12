@@ -10,7 +10,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "OneTimePasswords")
+@Table(name = "one_time_passwords")
 public class OneTimePassword extends BaseEntity {
 
     private  String email;

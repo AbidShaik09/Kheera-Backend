@@ -10,6 +10,9 @@ services:
     env_file:
       - .env
 
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://kheera.theknightdevelopers.online}
+
     ports:
       - "8080:8080"
 

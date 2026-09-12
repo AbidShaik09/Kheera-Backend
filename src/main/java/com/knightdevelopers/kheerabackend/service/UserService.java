@@ -5,6 +5,7 @@ import com.knightdevelopers.kheerabackend.entity.User;
 import com.knightdevelopers.kheerabackend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public class UserService {
         this.authenticationService=authenticationService;
     }
 
-    public  String resetUserPassword (ResetPasswordRequest resetPasswordRequest) throws  Exception{
+    @Transactional
+    public String resetUserPassword(ResetPasswordRequest resetPasswordRequest) throws Exception {
         OtpValidationRequest otpValidationRequest=new OtpValidationRequest();
         otpValidationRequest.setOtp(resetPasswordRequest.getOtp());
         otpValidationRequest.setEmail(resetPasswordRequest.getEmail());
@@ -31,19 +33,18 @@ public class UserService {
             throw new Exception("OTP is not verified");
         }
 
-        User existingUser= userRepository.findByEmail(resetPasswordRequest.getEmail()).get();
+        User existingUser = userRepository.findActiveByEmail(resetPasswordRequest.getEmail())
+                .orElseThrow(() -> new Exception("User not found"));
         existingUser.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
         userRepository.save(existingUser);
 
         return authenticationService.generateToken(existingUser.getEmail());
 
     }
+    @Transactional(readOnly = true)
     public String authenticateLoginRequest(LoginRequest loginRequest) throws Exception {
-        boolean isUserExists= userRepository.findByEmail(loginRequest.getEmail()).isPresent();
-        if(!isUserExists){
-            throw new Exception("Invalid Email Or Password");
-        }
-        User existingUser=userRepository.findByEmail(loginRequest.getEmail()).get();
+        User existingUser = userRepository.findActiveByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new Exception("Invalid Email Or Password"));
         boolean isAuthenticated= passwordEncoder.matches(loginRequest.getPassword(), existingUser.getPassword());
         if (!isAuthenticated){
 
@@ -53,15 +54,20 @@ public class UserService {
         return authenticationService.generateToken(existingUser.getEmail());
     }
 
-    public Optional<User> getUserByEmail(String email){
-
-        return userRepository.findByEmail(email);
+    @Transactional(readOnly = true)
+    public Optional<UserResponse> getCurrentUser(String email) {
+        return userRepository.findActiveUserSummaryByEmail(email);
     }
 
+    @Transactional(readOnly = true)
     public boolean isAnExistingUser(String email){
-        return userRepository.findByEmail(email).isPresent();
+        return userRepository.findActiveByEmail(email).isPresent();
     }
+    @Transactional
     public String createUser(SignUpRequest signUpRequest) throws Exception {
+        if (userRepository.findActiveByEmail(signUpRequest.getEmail()).isPresent()) {
+            throw new Exception("Email already registered!");
+        }
 
         OtpValidationRequest otpValidationRequest=new OtpValidationRequest();
         otpValidationRequest.setOtp(signUpRequest.getOtp());
@@ -81,16 +87,8 @@ public class UserService {
 
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> getUsers() {
-
-
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail()
-                ))
-                .toList();
+        return userRepository.findActiveUserSummaries();
     }
 }
