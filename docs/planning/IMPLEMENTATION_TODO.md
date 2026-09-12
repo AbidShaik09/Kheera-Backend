@@ -107,7 +107,7 @@ and membership isolation. This is the primary guard against future schema drift.
 Depends on #43 for the final space-list regression test. Verify exact current
 authentication response contracts because the Angular client consumes raw text
 from auth endpoints. Full `mvnw verify` passes with MockMvc coverage for auth,
-user, space, health, JWT, security, and CORS behavior.
+user, space, health, JWT, security, and CORS behavior. Clean verification now passes 41 tests with zero skips, including current-user token rejection and allowed/rejected CORS origins.
 
 ### 7. Email worker tests and CI gate
 

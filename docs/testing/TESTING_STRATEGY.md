@@ -532,7 +532,10 @@ PR #63 supplies explicit localhost mail settings to the full-context test so
 it starts without an ignored environment file or SMTP credentials. The MVC
 security slice imports `TimeConfig` alongside the real `AuthenticationService`
 to satisfy its clock dependency after merging the service-test baseline.
-The complete clean verification passes 39 tests with zero skips; the shared
+The current-user route is checked with missing, malformed, and invalid bearer
+tokens. CORS tests exercise both an explicitly allowed origin and rejection of
+an untrusted origin without credentialed response headers.
+The complete clean verification passes 41 tests with zero skips; the shared
 `Verify Backend` PR workflow runs the same command on Ubuntu with Docker.
 
 ### Mandatory Docker verification

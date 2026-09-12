@@ -45,7 +45,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JwtAuthenticationFilter.class,
         AuthenticationService.class
 })
-@TestPropertySource(properties = "jwt.secret=abcdefghijklmnopqrstuvwxyz123456")
+@TestPropertySource(properties = {
+        "jwt.secret=abcdefghijklmnopqrstuvwxyz123456",
+        "app.cors.allowed-origins=https://kheera.example"
+})
 class ControllerSecurityMockMvcTest {
 
     @Autowired
@@ -248,6 +251,34 @@ class ControllerSecurityMockMvcTest {
                 .andExpect(jsonPath("$[0].name").value("Workspace"));
 
         verify(spaceService).getSpacesForUserEmail(eq("member@example.com"));
+    }
+
+    @Test
+    void currentUserRejectsMissingMalformedAndInvalidTokens() throws Exception {
+        mockMvc.perform(get("/api/users/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Invalid Or Expired Token"));
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Basic abc"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Invalid Or Expired Token"));
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Invalid Or Expired Token"));
+
+        verify(userService, never()).getCurrentUser(any());
+    }
+
+    @Test
+    void corsPreflightRejectsUntrustedOrigin() throws Exception {
+        mockMvc.perform(options("/api/spaces")
+                        .header(HttpHeaders.ORIGIN, "https://untrusted.example")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Authorization"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
+
+        verify(spaceService, never()).getSpacesForUserEmail(any());
     }
 
     @Test

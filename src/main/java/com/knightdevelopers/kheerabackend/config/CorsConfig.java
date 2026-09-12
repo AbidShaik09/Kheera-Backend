@@ -1,5 +1,6 @@
 package com.knightdevelopers.kheerabackend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -12,15 +13,15 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsFilter corsFilter(
+            @Value("${app.cors.allowed-origins:http://localhost:4200}") List<String> allowedOrigins) {
 
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
 
-        config.setAllowedOriginPatterns(List.of(
-                "*"
-        ));
+        config.setAllowedOrigins(allowedOrigins);
+        config.validateAllowCredentials();
 
         config.setAllowedHeaders(List.of("*"));
 
