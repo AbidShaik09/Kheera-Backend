@@ -1,5 +1,14 @@
 # Kheera Backend Implementation Todo
 
+## Active Deployment Hotfix (2026-09-13)
+
+- [ ] [#71 Fix deployment Testcontainers Docker API compatibility](https://github.com/AbidShaik09/Kheera-Backend/issues/71).
+  PR #64 is now merged. Deployment run 34723314984 exposed Testcontainers 1.20.4
+  using Docker API 1.32 against a daemon requiring at least 1.40. Upgrade the
+  test-scoped BOM to 1.21.4, run all Docker-backed checks, and verify deployment.
+  The owner explicitly authorizes this incident fix directly on develop.
+  Older closed/unmerged PR #64 notes below are historical and superseded.
+
 ## How to Use This File
 
 This is the recommended delivery order for currently open backend work. Follow

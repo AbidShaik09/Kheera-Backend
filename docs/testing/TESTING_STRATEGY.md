@@ -1,5 +1,17 @@
 # Kheera Backend Testing Strategy
 
+## Docker API Compatibility
+
+Use the Testcontainers 1.21.4 BOM for all Testcontainers modules. Version 1.20.4
+sent Docker API 1.32, which the development host rejected (minimum 1.40) in
+deployment run 34723314984 after PR #64 enabled tests. The upstream 1.21.4
+release restores compatibility with recent Docker Engines:
+https://github.com/testcontainers/testcontainers-java/releases/tag/1.21.4.
+Keep PostgreSQL tests and clean builds enabled; do not lower the Docker daemon
+API minimum or skip tests to work around client incompatibility. Validate with
+`docker info` and `./mvnw clean verify`; dependency compatibility must be checked
+on the deployment runner as well as the local machine. Tracked by #71.
+
 ## Purpose
 
 This guide defines the ideal automated-test approach for the current Kheera
