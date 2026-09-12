@@ -154,7 +154,7 @@ particularly `Email already registered!`.
 | --- | --- | --- | --- |
 | `GET /api/users/me` | Bearer expected | `{ "id", "name", "email" }` | Security configuration currently permits the path but it returns `401` without a valid authentication context. It should remain a protected frontend call. |
 | `GET /api/users` | Bearer | `UserResponse[]` | Currently returns all users. Do not use as an unrestricted people directory in production without pagination and membership scoping. |
-| `GET /api/spaces` | Bearer | `SpaceListDto[]` with `id`, `name` | **Currently broken:** controller parses `authentication.getName()` as UUID, but JWT authentication stores the email as the name. Resolve the user by email first. |
+| `GET /api/spaces` | Bearer | `SpaceListDto[]` with `id`, `name` | Resolves the JWT email subject to active space memberships and excludes soft-deleted users, memberships, and spaces. |
 | `GET /api/health` | Public | Raw `Server is Healthy` text | Infrastructure health check. |
 | `GET /api/weather` | Bearer | Raw weather text | Development/demo endpoint, not part of Kheera product contract. |
 | `POST /api/weather` | Bearer | Raw string body | Development/demo endpoint, not part of Kheera product contract. |
@@ -216,7 +216,7 @@ Suggested dashboard response:
 
 | Method and path | Status | Purpose |
 | --- | --- | --- |
-| `GET /api/spaces` | Implemented, needs fix | Sidebar list of spaces visible to the current user. |
+| `GET /api/spaces` | Implemented | Sidebar list of spaces visible to the current user. |
 | `POST /api/spaces` | Required | Create a space from the global Create action. |
 | `GET /api/spaces/{spaceId}` | Required | Load the Space Details page. |
 | `PATCH /api/spaces/{spaceId}` | Required | Rename/edit description/profile picture. |
@@ -389,15 +389,14 @@ though the Penpot drafts do not show them yet.
 
 ## Implementation Order
 
-1. Fix `GET /api/spaces` to resolve the JWT email to a user ID.
-2. Complete `GET/PATCH /api/users/me`, spaces, project CRUD, and the dashboard
+1. Complete `GET/PATCH /api/users/me`, spaces, project CRUD, and the dashboard
    read model.
-3. Decide and migrate the work-item board-stage relationship before building
+2. Decide and migrate the work-item board-stage relationship before building
    Project Details drag-and-drop.
-4. Implement work-item CRUD, member assignment, comments, and attachment upload.
-5. Add search, activity, favourites, and notifications once their persistence
+3. Implement work-item CRUD, member assignment, comments, and attachment upload.
+4. Add search, activity, favourites, and notifications once their persistence
    models are agreed.
-6. Publish this contract as OpenAPI/Swagger and generate or validate Angular
+5. Publish this contract as OpenAPI/Swagger and generate or validate Angular
    client types from it. Avoid hand-maintaining duplicate request interfaces.
 
 ## Known Contract Risks
