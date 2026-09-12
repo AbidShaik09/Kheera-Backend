@@ -2,6 +2,7 @@ package com.knightdevelopers.kheerabackend.repository;
 
 import com.knightdevelopers.kheerabackend.dto.SpaceListDto;
 import com.knightdevelopers.kheerabackend.entity.User;
+import com.knightdevelopers.kheerabackend.entity.space.SpaceMembers;
 import com.knightdevelopers.kheerabackend.entity.space.SpaceRoles;
 import com.knightdevelopers.kheerabackend.entity.space.Spaces;
 import jakarta.persistence.EntityManager;
@@ -89,7 +90,11 @@ class SpaceMembersRepositoryIntegrationTest extends PostgreSqlIntegrationTest {
         role.setRoleName("Admin");
         space.addRole(role);
         space.addMember(owner, role);
-        return persist(space);
+        Spaces persistedSpace = persist(space);
+        SpaceMembers member = persistedSpace.getSpaceMembers().getFirst();
+        entityManager.persist(member);
+        entityManager.flush();
+        return persistedSpace;
     }
 
     private <T> T persist(T entity) {

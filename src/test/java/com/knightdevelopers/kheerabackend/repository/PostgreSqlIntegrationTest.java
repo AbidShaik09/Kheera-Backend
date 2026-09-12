@@ -3,17 +3,19 @@ package com.knightdevelopers.kheerabackend.repository;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 abstract class PostgreSqlIntegrationTest {
 
-    @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("kheera_test")
             .withUsername("kheera")
             .withPassword("kheera");
+
+    static {
+        POSTGRES.start();
+    }
 
     @DynamicPropertySource
     static void registerPostgreSqlProperties(DynamicPropertyRegistry registry) {
