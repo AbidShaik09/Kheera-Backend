@@ -17,4 +17,3 @@ deployed. Completed material changes also require a row in `CHANGE_HISTORY.md`.
 | Project board | Planned | Backend [#45](https://github.com/AbidShaik09/Kheera-Backend/issues/45), [#10](https://github.com/AbidShaik09/Kheera-Backend/issues/10), frontend [#64](https://github.com/AbidShaik09/Kheera-Frontend/issues/64). | Define ordered workflow stages, then build project APIs and board UI. |
 | Task details and attachments | Planned | Backend [#11](https://github.com/AbidShaik09/Kheera-Backend/issues/11), [#28](https://github.com/AbidShaik09/Kheera-Backend/issues/28), frontend [#65](https://github.com/AbidShaik09/Kheera-Frontend/issues/65). | Complete work items/comments before attachment UX. |
 | Production operations | Observed; needs ongoing validation | Contabo deployment inventory and TLS history. | Keep TLS, exposed ports, backups, updates, and CI/CD status verified. |
-
