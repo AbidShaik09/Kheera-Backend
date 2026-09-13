@@ -103,7 +103,11 @@ If required local verification cannot run, stop delivery, document the blocker,
 and fix it or ask the owner for guidance. Missing tooling requires permission
 before installation. Retry sandbox-restricted network/Docker commands with the
 appropriate permissions before changing the plan. Missing Docker is a blocker,
-not a passing or skipped result.
+not a passing or skipped result. Before declaring Docker unavailable, follow
+[Windows Docker Desktop recovery](../testing/TESTING_STRATEGY.md#windows-docker-desktop-readiness-and-recovery):
+retry sandbox access with host permissions, start the installed Desktop runtime
+when needed, and wait for a successful engine response. A closed Desktop window
+or a working CLI alone does not establish engine state.
 
 For owner-requested documentation/rule-only changes, use synchronized clean
 `develop`, inspect the diff and verify links/instructions, update

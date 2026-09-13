@@ -7,6 +7,7 @@ unredacted production output.
 
 | Date | Change | Affected areas | Issue / reference | Impact |
 | --- | --- | --- | --- | --- |
+| 2026-09-13 | Documented Windows Docker Desktop readiness and recovery for agents. | Engineering standards, testing strategy, README. | Owner-requested documentation update. | Distinguishes sandbox permissions from a stopped engine, starts an installed Desktop runtime, and verifies the engine before mandatory container tests. |
 | 2026-09-13 | Hardened backend GitHub Actions for PR verification and deployments. | Backend workflows, testing policy, engineering delivery docs. | [Backend #55](https://github.com/AbidShaik09/Kheera-Backend/issues/55). | PR verification now has concurrency protection, deployments use read-only permissions, pinned checkout, protected environments, exact triggering-SHA checkout, test-enabled Maven package, and documented branch-protection follow-up. |
 | 2026-09-13 | Restored the reconciled backend roadmap overwritten during PR #64 merge. | Implementation TODO. | #66–#71, PR #64. | Preserves the five product slices and closed-issue reconciliation while recording #50/#71 as delivered and keeping the remaining #55 scope open. |
 | 2026-09-13 | Verified successful deployment of the Docker API compatibility hotfix. | Development backend. | #71; commit c78810c; run 34723685764. | Deployment ran all 56 tests with zero failures/errors/skips, rebuilt and started the backend container, and the public development health endpoint returned 200 Server is Healthy. |

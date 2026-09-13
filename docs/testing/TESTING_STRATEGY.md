@@ -1,5 +1,43 @@
 # Kheera Backend Testing Strategy
 
+## Windows Docker Desktop readiness and recovery
+
+An installed Docker CLI does not prove that the engine is running. Closing the
+Desktop window can leave the engine running; quitting Desktop can stop it.
+Treat a successful `docker info` Server response as the readiness check, even
+if `docker desktop status` disagrees. Do this before PostgreSQL tests or local
+container startup, not after a Maven failure.
+
+1. Run `docker info`. If the sandbox reports access denied, a forbidden socket,
+   or inaccessible named pipe, retry with the approved host/user permissions.
+   Per-user Docker access failures are not proof that Docker is absent.
+2. If the engine is stopped or its pipe is missing under the host account, run
+   `docker desktop start --timeout 60`. Starting the already-installed local
+   development runtime is routine environment preparation; do not ask the owner
+   to open the app manually before trying this recovery.
+3. If the Desktop CLI plugin is unavailable, locate the installed executable
+   under Program Files or the user's local Programs directory. Verify the path
+   exists, then use PowerShell `Start-Process -FilePath <verified-path>
+   -WindowStyle Hidden`. Do not guess a path and report it as verified.
+4. Poll `docker info` every five seconds for at most two minutes, using short
+   calls so progress remains visible. Require a successful Server response and
+   Linux engine before running PostgreSQL Testcontainers. Inspect
+   `docker context ls` and `docker context inspect` if the selected endpoint is
+   wrong; do not reset Docker, delete data, or change unrelated workloads.
+5. Run `.\mvnw.cmd clean verify` from the same host/user environment that passed
+   `docker info`. Require all tests to execute with zero skips. An API-version
+   mismatch after connection is a separate compatibility problem (see below).
+
+If startup times out, inspect Desktop diagnostics and report the exact failure
+and attempted recovery. Missing installation, virtualization/WSL faults, and
+permissions that remain unavailable are blockers; installation requires owner
+permission. Never replace PostgreSQL, skip tests, or weaken the verification
+gate to compensate. Do not stop a healthy engine merely to test these steps.
+
+Validated on 2026-09-13: the installed CLI exposes `docker desktop start
+--timeout`; host-account `docker info` reaches the Linux engine. Desktop status
+reported stopped while the engine answered, so engine readiness takes priority.
+
 ## Docker API Compatibility
 
 Use the Testcontainers 1.21.4 BOM for all Testcontainers modules. Version 1.20.4

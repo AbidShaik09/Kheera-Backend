@@ -37,6 +37,11 @@ Built with:
 
 # Prerequisites
 
+For PostgreSQL integration tests, ensure Docker Desktop's Linux engine is ready.
+If Desktop is closed or Docker access fails, follow the
+[Windows Docker readiness and recovery steps](docs/testing/TESTING_STRATEGY.md#windows-docker-desktop-readiness-and-recovery)
+before running Maven. Do not skip container tests.
+
 Install the following before starting:
 
 ## Required Software
