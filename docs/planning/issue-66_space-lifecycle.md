@@ -54,3 +54,9 @@ Baseline: fresh `develop` b86ee28; foundation PRs #62, #63 and #64 are merged.
   These are covered by regressions; no further global rule is needed beyond the
   newly published requirement for initial `@codex review`.
 - PR creation, CI and Codex review pending; no merge/deployment claimed.
+
+## PR #74 review follow-up
+
+Codex identified missing PATCH in the CORS method allow-list. A preflight regression first reproduced HTTP 403 instead of 200, then PATCH was added. Coverage verifies configured-origin credentials and PATCH access while rejecting untrusted origins. Full clean verification and local preflight verification are required before pushing this fix.
+
+Review-fix verification (2026-09-13): Docker-backed clean verify passed 74 tests with zero failures/errors/skips. Local startup, health, lifecycle API smoke and OpenAPI checks passed again. Live PATCH preflight returned 200 for the configured localhost origin and 403 for an untrusted origin.

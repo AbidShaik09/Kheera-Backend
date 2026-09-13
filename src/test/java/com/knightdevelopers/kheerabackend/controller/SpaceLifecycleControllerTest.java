@@ -32,6 +32,21 @@ class SpaceLifecycleControllerTest {
     SpaceDetailDto detail() { return new SpaceDetailDto(id, "Product", null, null,
             Instant.EPOCH, Instant.EPOCH, new SpaceDetailDto.Capabilities(true, true, true)); }
 
+    @Test void patchPreflightAllowsConfiguredOriginAndRejectsUntrustedOrigin() throws Exception {
+        mvc.perform(options("/api/spaces/" + id).header("Origin", "http://localhost:4200")
+                .header("Access-Control-Request-Method", "PATCH")
+                .header("Access-Control-Request-Headers", "Authorization,Content-Type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"))
+                .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("PATCH")));
+        mvc.perform(options("/api/spaces/" + id).header("Origin", "https://untrusted.example")
+                .header("Access-Control-Request-Method", "PATCH"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+        verifyNoInteractions(service);
+    }
+
     @Test void lifecycleUsesJwtEmailAndDocumentedStatuses() throws Exception {
         when(service.create(eq("owner@example.com"), any())).thenReturn(detail());
         when(service.detail("owner@example.com", id)).thenReturn(detail());

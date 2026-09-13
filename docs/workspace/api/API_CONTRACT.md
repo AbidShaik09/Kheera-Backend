@@ -477,3 +477,5 @@ All future descendant services must call `SpaceAccessService.requireSpace` in
 their transaction before accessing a project/task, resolving its actual parent
 space from the database. For mutations, acquire the active-space write lock before
 loading descendants. #68/#69 implement those HTTP APIs; they do not exist yet.
+
+PATCH is included in the CORS method allow-list. Configured frontend origins may preflight authenticated metadata updates; untrusted origins remain rejected.

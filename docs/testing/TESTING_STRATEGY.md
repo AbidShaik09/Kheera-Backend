@@ -646,3 +646,5 @@ JSON errors, forged fields and caller-email delegation. PostgreSQL-backed
 bootstrap commit/rollback, scoped grants, soft-deleted access rejection, persisted
 PATCH semantics and retained descendants. Run targeted classes during development,
 then the complete `mvnw.cmd clean verify` with Docker and zero skipped tests.
+
+Space lifecycle controller coverage also exercises PATCH preflight from configured and untrusted browser origins, including credentials and the allowed-method response.
