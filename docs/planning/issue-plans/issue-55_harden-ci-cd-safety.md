@@ -40,9 +40,9 @@
 - [x] Run docker info and full `.\mvnw.cmd clean verify`; record counts and zero skips.
 - [x] Fix failures and rerun failed/affected checks plus full clean verification.
 - [x] Self-review diff against all criteria, scope, security, and documentation.
-- [ ] Commit/push issue branch with plan; create PR to develop with evidence.
-- [ ] Post exactly `@codex review`; verify accepted comment and record URL.
-- [ ] Follow repository issue-closure policy; keep remaining work on the PR.
+- [x] Commit/push issue branch with plan; create PR to develop with evidence.
+- [x] Post exactly `@codex review`; verify accepted comment and record URL.
+- [x] Follow repository issue-closure policy; keep remaining work on the PR.
 - [ ] Inspect CI/reviews; fix valid findings, rerun required validation, and push.
 - [ ] Resolve addressed threads with evidence; post fresh `@codex review`.
 - [ ] Review blockers and update rules where needed.
@@ -63,9 +63,9 @@
 | 2026-09-13 | Selected #55 instead of #67/#68 because #67/#68 depend on unmerged foundation work. | #55 can be delivered directly from `develop` without duplicating dependent application features. | Inspect workflows, update docs, run full verification. |
 
 ## Delivery
-- PR URL: Pending.
-- Initial Codex request URL: Pending.
+- PR URL: https://github.com/AbidShaik09/Kheera-Backend/pull/77
+- Initial Codex request URL: https://github.com/AbidShaik09/Kheera-Backend/pull/77#issuecomment-5654147064
 - Follow-up review URLs and findings: Pending.
-- CI results: Pending.
+- CI results: Pending on PR #77.
 - Merge/deployment status and evidence: Pending.
 - Remaining steps or blockers: frontend workflow and repository branch-protection settings may need separate repository/admin follow-up.
