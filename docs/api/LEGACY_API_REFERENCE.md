@@ -622,3 +622,10 @@ Database
 ```
 
 The goal is to become comfortable reading an existing codebase and extending it with new functionality.
+
+## Current space lifecycle (#66)
+
+`POST /api/spaces` and `GET/PATCH/DELETE /api/spaces/{spaceId}` are implemented on
+the issue #66 branch. Use the canonical [Space Lifecycle Contract](../workspace/api/API_CONTRACT.md#space-lifecycle-contract-66)
+for DTOs, limits, PATCH semantics, permission requirements and error responses.
+Legacy team API sketches are not the space-domain implementation contract.
