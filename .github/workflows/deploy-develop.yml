@@ -5,19 +5,33 @@ on:
     branches:
       - develop
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend-development
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: self-hosted
+    timeout-minutes: 30
+    environment: development
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Deploy to Development Folder
         run: |
+          set -euo pipefail
+
           cd /opt/apps/develop/kheera-backend/Kheera-Backend
 
-          git pull origin develop
+          git fetch origin develop
+          git merge --ff-only origin/develop
 
           chmod +x mvnw
 

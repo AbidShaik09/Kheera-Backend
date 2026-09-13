@@ -29,17 +29,17 @@
 ## Ordered execution checklist
 - [x] Confirm issue requirements, dependencies, references, and latest develop.
 - [x] Create issue branch; update TODO; complete and commit this initial plan.
-- [ ] Write and run failing regression/unit/PostgreSQL tests; N/A: workflow hardening is validated by workflow inspection and full Maven verification rather than new Java tests.
-- [ ] Add required Flyway migration and compatible mappings, with database tests; N/A: no schema change.
-- [ ] Implement repository methods; run repository tests; N/A: no repository code change.
-- [ ] Implement services and transaction/authorization rules; run service tests; N/A: no service code change.
-- [ ] Implement controllers, DTOs, and errors; run controller tests; N/A: no controller code change.
-- [ ] Run targeted regression after each phase.
-- [ ] Update API, schema, architecture, testing, README, and TODO documents.
-- [ ] Start locally; verify health, affected API success/failure/auth, and OpenAPI; N/A unless workflow edits touch runtime behavior.
-- [ ] Run docker info and full `.\mvnw.cmd clean verify`; record counts and zero skips.
-- [ ] Fix failures and rerun failed/affected checks plus full clean verification.
-- [ ] Self-review diff against all criteria, scope, security, and documentation.
+- [x] Write and run failing regression/unit/PostgreSQL tests; N/A: workflow hardening is validated by workflow inspection and full Maven verification rather than new Java tests.
+- [x] Add required Flyway migration and compatible mappings, with database tests; N/A: no schema change.
+- [x] Implement repository methods; run repository tests; N/A: no repository code change.
+- [x] Implement services and transaction/authorization rules; run service tests; N/A: no service code change.
+- [x] Implement controllers, DTOs, and errors; run controller tests; N/A: no controller code change.
+- [x] Run targeted regression after each phase.
+- [x] Update API, schema, architecture, testing, README, and TODO documents.
+- [x] Start locally; verify health, affected API success/failure/auth, and OpenAPI; N/A: workflow/docs-only change with no runtime API behavior.
+- [x] Run docker info and full `.\mvnw.cmd clean verify`; record counts and zero skips.
+- [x] Fix failures and rerun failed/affected checks plus full clean verification.
+- [x] Self-review diff against all criteria, scope, security, and documentation.
 - [ ] Commit/push issue branch with plan; create PR to develop with evidence.
 - [ ] Post exactly `@codex review`; verify accepted comment and record URL.
 - [ ] Follow repository issue-closure policy; keep remaining work on the PR.
@@ -53,9 +53,9 @@
 | Step | Command or manual procedure | Expected | Actual result / counts / evidence | Tested commit or working-tree state |
 | --- | --- | --- | --- | --- |
 | Baseline sync | `git fetch origin develop`; branch from `origin/develop` | Branch starts from latest fetched develop | Passed; branch created at `4c3da1b` | `issue/55_harden-ci-cd-safety` |
-| Workflow syntax inspection | Inspect edited `.github/workflows/*.yml` | Valid YAML and issue criteria represented | Pending | Pending |
-| Full backend verification | `.\mvnw.cmd clean verify` | Build passes with zero failures/errors/skips | Pending | Pending |
-| Docker availability | `docker info` | Docker reachable for Testcontainers | Pending | Pending |
+| Workflow syntax inspection | Inspect edited `.github/workflows/*.yml`; `git diff --check` | Valid YAML and issue criteria represented | Passed; diff check reported no whitespace errors. | Working tree before final commit |
+| Full backend verification | `.\mvnw.cmd clean verify` with network permission for dependency resolution | Build passes with zero failures/errors/skips | Passed: 74 tests, 0 failures, 0 errors, 0 skipped; build success. | Working tree before final commit |
+| Docker availability | `docker info`; Testcontainers output during `.\mvnw.cmd clean verify` | Docker reachable for Testcontainers | `docker` CLI was not on PATH, but Testcontainers connected to Docker Desktop 29.7.2 through local npipe during Maven verification. | Working tree before final commit |
 
 ## Plan changes and resume notes
 | Date | New evidence / deviation | Reason and scope decision | Steps/checks to repeat |

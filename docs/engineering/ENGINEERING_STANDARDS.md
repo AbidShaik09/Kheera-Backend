@@ -84,7 +84,10 @@ validation gate. The docs-only exception below is the only alternate path.
     verification evidence, and remaining limitations. Immediately request Codex
     review as specified below. Under the backend's existing issue policy, close
     the issue after PR creation; track CI, review, merge, and deployment on the PR.
-12. Inspect CI and reviews. Fix valid findings, rerun required validation, push
+12. Inspect CI and reviews. Ordinary pull requests to `develop` must receive a
+    successful `Verify Backend` check before merge; repository branch protection
+    should require that check and should not expose deployment secrets to PR
+    workflows. Fix valid findings, rerun required validation, push
     the fixes, resolve addressed threads with evidence, and request a fresh
     `@codex review`. A review request alone is not a completed review.
 13. Review blockers and misunderstandings encountered. Update relevant rules
