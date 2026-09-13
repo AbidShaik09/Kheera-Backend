@@ -25,13 +25,13 @@ Spring framework internals, or trivial delegation that has no business risk.
 
 ## Current Baseline
 
-- The repository currently contains one context-load test only:
-  `KheeraBackendApplicationTests`.
+- The repository has unit, controller, security, worker, and PostgreSQL
+  Testcontainers repository coverage for the current backend baseline.
 - `spring-boot-starter-test` supplies JUnit Jupiter, Mockito, AssertJ, and the
   Spring test framework.
-- No Testcontainers dependency is currently declared.
-- Deployment workflows run Maven with `-DskipTests`; this must change before
-  tests can protect development or production deployment.
+- Testcontainers dependencies are declared through the Testcontainers BOM.
+- Deployment workflows run Maven package without test-skip flags before
+  rebuilding containers. A failing test or package step must stop deployment.
 - The backend uses PostgreSQL, Flyway, Hibernate validation, UUIDs, and JPQL
   projections. Repository tests must therefore use PostgreSQL, not H2.
 
@@ -586,19 +586,29 @@ The backend deployment workflows run tests before deployment:
 
 Clean compilation prevents stale tests in persistent deployment checkouts.
 Test mail properties are supplied explicitly to the context test; no developer
-environment file or SMTP credentials are required. Keep the following gates:
+environment file or SMTP credentials are required. Deployment workflows use
+read-only repository permissions, pinned checkout actions, environment-scoped
+execution, and non-overlapping concurrency groups for development and
+production. Keep the following gates:
 
-1. Pull request: `./mvnw test` for unit and controller tests.
-2. Pull request or protected branch: run PostgreSQL Testcontainers integration
-   tests where Docker is available.
-3. Only deploy after required tests pass.
-4. Keep a separate explicit deployment step; never treat a successful Docker
+1. Pull request: `./mvnw clean verify` for unit, controller, security, worker,
+   and PostgreSQL Testcontainers tests.
+2. Protected branch and deployment runner: run Maven package with tests enabled
+   before rebuilding containers.
+3. Require the `Verify Backend` check on ordinary pull requests to `develop`
+   through branch protection after the workflow PR merges.
+4. Only deploy after required tests pass.
+5. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
 PR #62 adds `.github/workflows/verify.yml` to run the full Maven `verify`
 lifecycle on a GitHub-hosted Ubuntu runner with Java 21 and Docker for pull
 requests targeting `develop`. It uses the committed PostgreSQL 16 Testcontainers
-harness. Deployment gating remains part of #50.
+harness. Issue #55 hardens the workflows with least-privilege permissions,
+pinned actions, deployment environments, concurrency guards, and deployment of
+the exact triggering GitHub SHA after environment approval; frontend PR checks
+and repository branch-protection settings remain separate repository or admin
+tasks.
 
 On 2026-09-12, the committed PostgreSQL 16 Testcontainers harness passed
 `mvnw.cmd clean verify` on local Docker Desktop: 34 tests, zero failures,
