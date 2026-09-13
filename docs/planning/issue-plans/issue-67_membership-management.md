@@ -56,15 +56,15 @@ README, IMPLEMENTATION_TODO, APPLICATION_PROGRESS; history only after merge.
 - [x] Start isolated PostgreSQL and `.\mvnw.cmd spring-boot:run`; verify `/api/health`, authenticated membership journey, 400/401/403/404/409 and `/v3/api-docs`.
 - [x] Run `docker info` and `.\mvnw.cmd clean verify`; require zero failures/errors/skips and record counts.
 - [x] Self-review scope, concurrency, permission escalation, validation, retention, SQL and documentation.
-- [ ] Commit/push branch; create own PR to develop with plan and verification evidence.
-- [ ] Request `@codex review` under requested repository workflow; record comment URL; close issue per repository policy.
+- [x] Commit/push branch; create own PR to develop with plan and verification evidence.
+- [x] Request `@codex review` under requested repository workflow; record comment URL; close issue per repository policy.
 - [ ] Inspect CI and review; fix valid findings, rerun affected startup/tests/full verify, push and request fresh review.
 - [ ] Review friction/rules; record ready or blocked state. Merge only with per-PR authorization; deployment/history remain pending until observed.
 
 ## Evidence and resume notes
 Docker host access verified; use escalated Maven for host
-Docker pipe and dependency access. No tests skipped. Initial expected red test,
-targeted tests, full suite, smoke, PR, CI and review evidence pending.
+Docker pipe and dependency access. No tests skipped. See recorded evidence below;
+CI and review results are pending.
 
 
 ### Validation results (2026-09-13)
@@ -93,3 +93,13 @@ targeted tests, full suite, smoke, PR, CI and review evidence pending.
   are outside the repository: issue67-red.log, issue67-targeted-final.log,
   issue67-smoke.log, issue67-verify-final.log. Tested implementation and context
   mock are the files committed with this plan update; only delivery docs follow.
+
+
+### Delivery
+- PR: https://github.com/AbidShaik09/Kheera-Backend/pull/78
+- Implementation commit: 9cbdcdf (preceded by initial plan cb7ded4).
+- Initial review request accepted: https://github.com/AbidShaik09/Kheera-Backend/pull/78#issuecomment-5654375353
+- Issue #67 closed after PR creation under repository policy; remaining delivery
+  tracked on PR #78. CI/review and merge/deployment pending, not claimed complete.
+- This delivery-record commit changes documentation only; implementation remains
+  byte-identical to the 92-test clean verification and successful local smoke.
