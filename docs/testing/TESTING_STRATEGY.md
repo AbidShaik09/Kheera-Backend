@@ -605,9 +605,10 @@ PR #62 adds `.github/workflows/verify.yml` to run the full Maven `verify`
 lifecycle on a GitHub-hosted Ubuntu runner with Java 21 and Docker for pull
 requests targeting `develop`. It uses the committed PostgreSQL 16 Testcontainers
 harness. Issue #55 hardens the workflows with least-privilege permissions,
-pinned actions, deployment environments, and concurrency guards; frontend PR
-checks and repository branch-protection settings remain separate repository or
-admin tasks.
+pinned actions, deployment environments, concurrency guards, and deployment of
+the exact triggering GitHub SHA after environment approval; frontend PR checks
+and repository branch-protection settings remain separate repository or admin
+tasks.
 
 On 2026-09-12, the committed PostgreSQL 16 Testcontainers harness passed
 `mvnw.cmd clean verify` on local Docker Desktop: 34 tests, zero failures,

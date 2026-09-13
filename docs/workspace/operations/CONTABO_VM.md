@@ -148,8 +148,8 @@ Workflow definitions live in both deployment worktrees under `.github/workflows/
 
 | Component | Branch trigger | Deployment directory | Deployment action |
 | --- | --- | --- | --- |
-| Backend production | `main` | `/opt/apps/prod/kheera-backend/Kheera-Backend` | `git fetch origin main`; `git merge --ff-only origin/main`; Maven package with tests enabled; `docker compose down/up -d --build` |
-| Backend development | `develop` | `/opt/apps/develop/kheera-backend/Kheera-Backend` | `git fetch origin develop`; `git merge --ff-only origin/develop`; Maven package with tests enabled; dev compose down/up with build |
+| Backend production | `main` | `/opt/apps/prod/kheera-backend/Kheera-Backend` | Fetch and check out the triggering `GITHUB_SHA`; Maven package with tests enabled; `docker compose down/up -d --build` |
+| Backend development | `develop` | `/opt/apps/develop/kheera-backend/Kheera-Backend` | Fetch and check out the triggering `GITHUB_SHA`; Maven package with tests enabled; dev compose down/up with build |
 | Frontend production | `main` | `/opt/apps/prod/kheera-frontend/Kheera-Frontend` | `git fetch`; `git reset --hard origin/main`; compose down/up with build; image prune |
 | Frontend development | `develop` | `/opt/apps/develop/kheera-frontend/Kheera-Frontend` | `git fetch`; `git reset --hard origin/develop`; dev compose down/up with build; image prune |
 
@@ -170,8 +170,8 @@ GitHub-hosted Ubuntu with Java 21 and PostgreSQL Testcontainers. It runs Maven
 `verify` with read-only repository permissions and no deployment credentials.
 Local Docker-backed verification also passed on 2026-09-12. Backend #55 adds
 workflow concurrency, pinned deployment checkout actions, environment-scoped
-deployment jobs, test-enabled Maven package, and fast-forward-only deployment
-updates.
+deployment jobs, test-enabled Maven package, and deployment from the exact
+triggering GitHub SHA instead of the latest branch tip after approval.
 
 ## Observed Repository State
 

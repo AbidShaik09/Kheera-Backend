@@ -56,16 +56,18 @@
 | Workflow syntax inspection | Inspect edited `.github/workflows/*.yml`; `git diff --check` | Valid YAML and issue criteria represented | Passed; diff check reported no whitespace errors. | Working tree before final commit |
 | Full backend verification | `.\mvnw.cmd clean verify` with network permission for dependency resolution | Build passes with zero failures/errors/skips | Passed: 74 tests, 0 failures, 0 errors, 0 skipped; build success. | Working tree before final commit |
 | Docker availability | `docker info`; Testcontainers output during `.\mvnw.cmd clean verify` | Docker reachable for Testcontainers | `docker` CLI was not on PATH, but Testcontainers connected to Docker Desktop 29.7.2 through local npipe during Maven verification. | Working tree before final commit |
+| Review fix validation | `git diff --check`; inspect deployment workflow diff | Deployments bind environment approval to the triggering revision | Passed; deploy jobs now fetch and check out `$GITHUB_SHA` in the persistent deployment directory. | Working tree before review-fix commit |
 
 ## Plan changes and resume notes
 | Date | New evidence / deviation | Reason and scope decision | Steps/checks to repeat |
 | --- | --- | --- | --- |
 | 2026-09-13 | Selected #55 instead of #67/#68 because #67/#68 depend on unmerged foundation work. | #55 can be delivered directly from `develop` without duplicating dependent application features. | Inspect workflows, update docs, run full verification. |
+| 2026-09-13 | GitHub review thread identified that environment-approved deploy runs could fetch the latest branch tip instead of the approved commit. | Real issue. Updated both deploy workflows to fetch and check out the triggering `$GITHUB_SHA`; updated CI/CD docs accordingly. | Re-run `git diff --check`, push, reply, resolve thread, and request fresh review. |
 
 ## Delivery
 - PR URL: https://github.com/AbidShaik09/Kheera-Backend/pull/77
 - Initial Codex request URL: https://github.com/AbidShaik09/Kheera-Backend/pull/77#issuecomment-5654147064
-- Follow-up review URLs and findings: Pending.
+- Follow-up review URLs and findings: Review thread https://github.com/AbidShaik09/Kheera-Backend/pull/77#discussion_r3999992979 fixed by binding deployments to `$GITHUB_SHA`.
 - CI results: Pending on PR #77.
 - Merge/deployment status and evidence: Pending.
 - Remaining steps or blockers: frontend workflow and repository branch-protection settings may need separate repository/admin follow-up.

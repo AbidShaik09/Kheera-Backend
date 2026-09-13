@@ -30,8 +30,8 @@ jobs:
 
           cd /opt/apps/prod/kheera-backend/Kheera-Backend
 
-          git fetch origin main
-          git merge --ff-only origin/main
+          git fetch --no-tags origin "$GITHUB_SHA"
+          git checkout --detach "$GITHUB_SHA"
 
           chmod +x mvnw
 
