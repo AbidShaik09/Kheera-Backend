@@ -228,10 +228,10 @@ Suggested dashboard response:
 | Method and path | Status | Purpose |
 | --- | --- | --- |
 | `GET /api/spaces` | Implemented | Sidebar list of spaces visible to the current user. |
-| `POST /api/spaces` | Required | Create a space from the global Create action. |
-| `GET /api/spaces/{spaceId}` | Required | Load the Space Details page. |
-| `PATCH /api/spaces/{spaceId}` | Required | Rename/edit description/profile picture. |
-| `DELETE /api/spaces/{spaceId}` | Required | Soft-delete a space, permission restricted. |
+| `POST /api/spaces` | Implemented | Create a space from the global Create action. |
+| `GET /api/spaces/{spaceId}` | Implemented | Load the Space Details page. |
+| `PATCH /api/spaces/{spaceId}` | Implemented | Rename/edit description/profile picture. |
+| `DELETE /api/spaces/{spaceId}` | Implemented | Soft-delete a space, permission restricted. |
 | `GET /api/spaces/{spaceId}/members` | Required | People and roles view. |
 | `POST /api/spaces/{spaceId}/members` | Required | Add/invite an existing user to a space. |
 | `PATCH /api/spaces/{spaceId}/members/{memberId}` | Required | Change member role. |
@@ -430,3 +430,52 @@ though the Penpot drafts do not show them yet.
   `Kheera-Backend/src/main/java/com/knightdevelopers/kheerabackend/controller`.
 - Backend DTOs, JWT filter, JPA entities, and Flyway migrations.
 - Frontend routing and API/auth services in `Kheera-Frontend/src/app`.
+
+## Space Lifecycle Contract (#66)
+
+Implemented on the issue branch; awaiting PR review/merge. The existing
+`GET /api/spaces` response stays an array of `{id,name}`.
+
+- `POST /api/spaces` returns 201, a relative Location header, and SpaceDetail.
+  The active JWT-email user becomes the creator member; one transaction creates
+  the space, Administrator role, permissions, grants and membership. Any failure
+  rolls back the whole bootstrap.
+- `GET /api/spaces/{spaceId}` returns 200 to an active member with an active role
+  belonging to that space. Missing/deleted spaces and nonmembers receive 404.
+- `PATCH /api/spaces/{spaceId}` requires `space.update` and returns 200.
+- `DELETE /api/spaces/{spaceId}` requires `space.delete` and returns 204. It marks
+  only the space deleted, retaining projects, work items and bootstrap records.
+  Subsequent reads/writes receive 404; it disappears from the caller's list.
+- Missing/invalid/expired JWTs or inactive accounts receive 401. An active member
+  without the action grant receives 403. Lifecycle failures use `{code,message,
+  fieldErrors}`; malformed UUIDs/JSON and unknown fields receive 400. Legacy auth
+  responses remain raw text. traceId remains optional and is not currently sent.
+
+SpaceDetail is `{id,name,description,profilePic,createdAt,updatedAt,capabilities}`.
+Capabilities is `{canUpdate,canDelete,canManageMembers}` and reflects active grants
+for the caller. `name` maps to `Spaces.spaceName`; UUIDs and UTC ISO-8601 timestamps
+are returned. No JPA objects, member identities or credentials are exposed.
+
+Input accepts only `name`, `description`, and `profilePic`. Name is required for
+creation, trimmed, nonblank, at most 255 Unicode characters, and cannot be null.
+Description is optional, at most 500 characters. profilePic is optional, at most
+255 characters, and must be an absolute HTTP(S) URL with a host and no credentials.
+The server stores the URL and does not fetch or upload images (#28).
+PATCH omission preserves a value; explicit null clears description/profilePic;
+null name is invalid. Empty PATCH preserves metadata and timestamps. Non-string
+values and unknown fields (including owner, creator, roles, grants and audit
+fields) are rejected, rather than used for authority.
+
+Minimum per-space permission catalogue: `space.update`, `space.delete`, and
+`space.members.manage`. Bootstrap grants all three to Administrator. Active
+membership itself permits reading metadata. #67 must reuse `space.members.manage`
+for membership mutations; role names alone never grant privileges. Permissions,
+roles and grants must all be active and belong to the same space as membership.
+Existing spaces receive no implicit role grants or backfill in this issue.
+
+All future descendant services must call `SpaceAccessService.requireSpace` in
+their transaction before accessing a project/task, resolving its actual parent
+space from the database. For mutations, acquire the active-space write lock before
+loading descendants. #68/#69 implement those HTTP APIs; they do not exist yet.
+
+PATCH is included in the CORS method allow-list. Configured frontend origins may preflight authenticated metadata updates; untrusted origins remain rejected.

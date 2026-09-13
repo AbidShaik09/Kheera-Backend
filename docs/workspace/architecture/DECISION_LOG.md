@@ -15,3 +15,13 @@ module, repository, environment, or future implementation choice.
 
 When a decision is superseded, add a new row that links to the replacement and
 mark the old decision `Superseded`; do not rewrite history.
+
+### 2026-09-13 — Space lifecycle authorization and bootstrap (#66)
+
+Use the existing per-space role/permission schema. Active membership grants read
+access; explicit `space.update`, `space.delete`, and `space.members.manage` grants
+control mutations. Bootstrap Administrator with all three atomically. No automatic
+grants for legacy roles. Reject unknown write fields; null clears optional PATCH
+metadata. Soft deletion hides the parent and retains children. Future child APIs
+must reuse the active-space gate and parent write lock. Implemented on issue #66
+branch; merge and deployment are pending.

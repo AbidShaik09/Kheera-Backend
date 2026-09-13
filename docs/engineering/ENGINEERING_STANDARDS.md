@@ -186,3 +186,14 @@ the repository owner first.
 - Code is self-reviewed for cleanup, security, and edge cases.
 - Run all Unit Tests and ensure no other functionality is Broken, If unit test in other features fail, reach out to application docs to figur out intended behaviour and fix the broken code or update Unit Tests, whichever meets the application requirements
 - PR targets `develop`, documents verification, and awaits review before merge.
+
+## Codex Review After PR Creation
+
+Immediately after creating any pull request, add a PR comment containing exactly
+`@codex review` to request Codex review. Verify that GitHub accepted the comment
+and record its URL in the delivery notes. This applies to every newly created
+PR, including drafts; do not wait for review findings before requesting the
+initial review. After addressing and resolving review comments, post a new
+`@codex review` comment for the updated head. A posted request is not evidence
+that review has completed; inspect and address the resulting review before
+considering the PR ready.

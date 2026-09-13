@@ -33,7 +33,7 @@ Use the linked acceptance criteria and the canonical
 
 1. [ ] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
    Create/read/update/soft-delete spaces, bootstrap creator permissions atomically,
-   and preserve the existing space-list response. Replaces historical #9.
+   and preserve the existing space-list response. Replaces historical #9. Implemented and locally verified (73 tests, zero skips) on `issue/66_space-lifecycle`; PR review/merge pending; see [plan and validation](issue-66_space-lifecycle.md).
 2. [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
    Depends on #66; supplies membership management, role/permission reads and
    last-administrator protection.
