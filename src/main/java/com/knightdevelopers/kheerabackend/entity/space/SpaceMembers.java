@@ -13,6 +13,17 @@ import lombok.Setter;
 @Table(name = "space_members")
 public class SpaceMembers extends BaseEntity {
 
+    public static SpaceMembers create(User user, Spaces space, SpaceRoles role) {
+        SpaceMembers member = new SpaceMembers();
+        member.user = user; member.space = space; member.changeRole(role);
+        return member;
+    }
+
+    public void changeRole(SpaceRoles role) {
+        if (!space.getId().equals(role.getSpace().getId())) throw new IllegalArgumentException("Role belongs to another space");
+        this.spaceRole = role;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @Setter(AccessLevel.NONE)

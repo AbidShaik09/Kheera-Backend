@@ -34,9 +34,10 @@ Each implementation issue requires its own branch and PR to `develop`.
 Use the linked acceptance criteria and the canonical
 [API contract](../workspace/api/API_CONTRACT.md).
 
-1. [ ] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
+1. [x] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
    Create/read/update/soft-delete spaces, bootstrap creator permissions atomically,
-   and preserve the existing space-list response. Replaces historical #9. Implemented and locally verified (73 tests, zero skips) on `issue/66_space-lifecycle`; PR review/merge pending; see [plan and validation](issue-66_space-lifecycle.md).
+   and preserve the existing space-list response. Replaces historical #9.
+   PR #74 is verified merged; see [plan and validation](issue-66_space-lifecycle.md).
 2. [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
    Depends on #66; supplies membership management, role/permission reads and
    last-administrator protection. In progress on `issue/67_membership-management`;

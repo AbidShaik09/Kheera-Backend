@@ -47,21 +47,49 @@ README, IMPLEMENTATION_TODO, APPLICATION_PROGRESS; history only after merge.
 ## Ordered execution
 - [x] Read requirements/references and verify baseline and dependencies.
 - [x] Create issue branch; update TODO and write initial plan.
-- [ ] Commit initial plan before tests/application edits.
-- [ ] Write existing-surface HTTP regression first; run `./mvnw -Dtest=MembershipHttpIntegrationTest test` and record endpoint failure.
-- [ ] Write repository/service/MVC tests before corresponding implementation.
-- [ ] Add V25 and repository queries; run `./mvnw -Dtest=MembershipIntegrationTest test`.
-- [ ] Implement transactional service and DTO/controller/error contracts; run `./mvnw -Dtest=MembershipServiceTest,MembershipControllerTest,MembershipHttpIntegrationTest test`.
-- [ ] Update affected documents and record targeted evidence; fix failures and rerun affected tests.
-- [ ] Start isolated PostgreSQL and `.\mvnw.cmd spring-boot:run`; verify `/api/health`, authenticated membership journey, 400/401/403/404/409 and `/v3/api-docs`.
-- [ ] Run `docker info` and `.\mvnw.cmd clean verify`; require zero failures/errors/skips and record counts.
-- [ ] Self-review scope, concurrency, permission escalation, validation, retention, SQL and documentation.
+- [x] Commit initial plan before tests/application edits.
+- [x] Write existing-surface HTTP regression first; run `./mvnw -Dtest=MembershipHttpIntegrationTest test` and record endpoint failure.
+- [x] Write repository/service/MVC tests before corresponding implementation.
+- [x] Add V25 and repository queries; run `./mvnw -Dtest=MembershipIntegrationTest test`.
+- [x] Implement transactional service and DTO/controller/error contracts; run `./mvnw -Dtest=MembershipServiceTest,MembershipControllerTest,MembershipHttpIntegrationTest test`.
+- [x] Update affected documents and record targeted evidence; fix failures and rerun affected tests.
+- [x] Start isolated PostgreSQL and `.\mvnw.cmd spring-boot:run`; verify `/api/health`, authenticated membership journey, 400/401/403/404/409 and `/v3/api-docs`.
+- [x] Run `docker info` and `.\mvnw.cmd clean verify`; require zero failures/errors/skips and record counts.
+- [x] Self-review scope, concurrency, permission escalation, validation, retention, SQL and documentation.
 - [ ] Commit/push branch; create own PR to develop with plan and verification evidence.
 - [ ] Request `@codex review` under requested repository workflow; record comment URL; close issue per repository policy.
 - [ ] Inspect CI and review; fix valid findings, rerun affected startup/tests/full verify, push and request fresh review.
 - [ ] Review friction/rules; record ready or blocked state. Merge only with per-PR authorization; deployment/history remain pending until observed.
 
 ## Evidence and resume notes
-Initial planning only. Docker host access verified; use escalated Maven for host
+Docker host access verified; use escalated Maven for host
 Docker pipe and dependency access. No tests skipped. Initial expected red test,
 targeted tests, full suite, smoke, PR, CI and review evidence pending.
+
+
+### Validation results (2026-09-13)
+- Initial HTTP regression: `mvnw.cmd -Dtest=MembershipHttpIntegrationTest test`
+  ran 1 test, failed on expected 200 versus actual 404 (missing endpoint), zero skips.
+- Initial targeted suite including space regressions: 27 passed, zero skips.
+- Expanded membership suite (migration, query count, retention, races, MVC/service):
+  18 passed, zero skips. Fixed a Runnable/ThrowingCallable test compilation error
+  before that run; it was not counted as the initial behavioral regression.
+- Standalone `mvnw.cmd spring-boot:run`, isolated postgres:16-alpine on localhost
+  55467 and backend 18067: health remained 200; membership create/list/change/delete,
+  rejoin ID, role/permission lists, 400/401/403/404/409 and generated OpenAPI passed.
+  Fixtures were synthetic, with no SMTP activity or development data mutation.
+- First full clean verify: 92 tests, 0 failures, 1 context setup error, 0 skips.
+  Added MembershipRoleRepository mock to the existing database-free context test.
+  No production behavior or test assertion was weakened. Full rerun pending.
+- Self-review checked safe sort allow-list/literal search, fetched DTO boundaries,
+  no per-member query growth, space lock before authority checks, current/target
+  grant subsets, deleted ancestors, rejoin identity and migration forward safety.
+- Friction review: Docker recovery is already documented in d1c547f. New repositories
+  also require mocks in the existing database-free context test; documented below
+  in testing strategy so future service additions preserve the full context gate.
+
+- Final `mvnw.cmd clean verify`: **92 tests, 0 failures, 0 errors, 0 skipped**;
+  BUILD SUCCESS, 59.442 seconds. Docker Linux engine 29.7.2. Local evidence logs
+  are outside the repository: issue67-red.log, issue67-targeted-final.log,
+  issue67-smoke.log, issue67-verify-final.log. Tested implementation and context
+  mock are the files committed with this plan update; only delivery docs follow.

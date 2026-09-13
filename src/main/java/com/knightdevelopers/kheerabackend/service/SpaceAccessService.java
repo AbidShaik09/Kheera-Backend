@@ -15,7 +15,13 @@ public class SpaceAccessService {
     public static final String UPDATE = "space.update";
     public static final String DELETE = "space.delete";
     public static final String MANAGE_MEMBERS = "space.members.manage";
-    public static final Set<String> CATALOGUE = Set.of(UPDATE, DELETE, MANAGE_MEMBERS);
+    public static final String MEMBER_READ = "space.members.read";
+    public static final String MEMBER_ADD = "space.members.add";
+    public static final String MEMBER_CHANGE_ROLE = "space.members.change-role";
+    public static final String MEMBER_REMOVE = "space.members.remove";
+    public static final Set<String> ADMINISTRATOR_GRANTS = Set.of(UPDATE, DELETE, MANAGE_MEMBERS);
+    public static final Set<String> CATALOGUE = Set.of(UPDATE, DELETE, MANAGE_MEMBERS,
+            MEMBER_READ, MEMBER_ADD, MEMBER_CHANGE_ROLE, MEMBER_REMOVE);
     private final UserRepository users;
     private final SpaceMembersRepository members;
     private final SpacesRepository spaces;
