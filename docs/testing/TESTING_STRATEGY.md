@@ -1,5 +1,43 @@
 # Kheera Backend Testing Strategy
 
+## Windows Docker Desktop readiness and recovery
+
+An installed Docker CLI does not prove that the engine is running. Closing the
+Desktop window can leave the engine running; quitting Desktop can stop it.
+Treat a successful `docker info` Server response as the readiness check, even
+if `docker desktop status` disagrees. Do this before PostgreSQL tests or local
+container startup, not after a Maven failure.
+
+1. Run `docker info`. If the sandbox reports access denied, a forbidden socket,
+   or inaccessible named pipe, retry with the approved host/user permissions.
+   Per-user Docker access failures are not proof that Docker is absent.
+2. If the engine is stopped or its pipe is missing under the host account, run
+   `docker desktop start --timeout 60`. Starting the already-installed local
+   development runtime is routine environment preparation; do not ask the owner
+   to open the app manually before trying this recovery.
+3. If the Desktop CLI plugin is unavailable, locate the installed executable
+   under Program Files or the user's local Programs directory. Verify the path
+   exists, then use PowerShell `Start-Process -FilePath <verified-path>
+   -WindowStyle Hidden`. Do not guess a path and report it as verified.
+4. Poll `docker info` every five seconds for at most two minutes, using short
+   calls so progress remains visible. Require a successful Server response and
+   Linux engine before running PostgreSQL Testcontainers. Inspect
+   `docker context ls` and `docker context inspect` if the selected endpoint is
+   wrong; do not reset Docker, delete data, or change unrelated workloads.
+5. Run `.\mvnw.cmd clean verify` from the same host/user environment that passed
+   `docker info`. Require all tests to execute with zero skips. An API-version
+   mismatch after connection is a separate compatibility problem (see below).
+
+If startup times out, inspect Desktop diagnostics and report the exact failure
+and attempted recovery. Missing installation, virtualization/WSL faults, and
+permissions that remain unavailable are blockers; installation requires owner
+permission. Never replace PostgreSQL, skip tests, or weaken the verification
+gate to compensate. Do not stop a healthy engine merely to test these steps.
+
+Validated on 2026-09-13: the installed CLI exposes `docker desktop start
+--timeout`; host-account `docker info` reaches the Linux engine. Desktop status
+reported stopped while the engine answered, so engine readiness takes priority.
+
 ## Docker API Compatibility
 
 Use the Testcontainers 1.21.4 BOM for all Testcontainers modules. Version 1.20.4
@@ -25,13 +63,13 @@ Spring framework internals, or trivial delegation that has no business risk.
 
 ## Current Baseline
 
-- The repository currently contains one context-load test only:
-  `KheeraBackendApplicationTests`.
+- The repository has unit, controller, security, worker, and PostgreSQL
+  Testcontainers repository coverage for the current backend baseline.
 - `spring-boot-starter-test` supplies JUnit Jupiter, Mockito, AssertJ, and the
   Spring test framework.
-- No Testcontainers dependency is currently declared.
-- Deployment workflows run Maven with `-DskipTests`; this must change before
-  tests can protect development or production deployment.
+- Testcontainers dependencies are declared through the Testcontainers BOM.
+- Deployment workflows run Maven package without test-skip flags before
+  rebuilding containers. A failing test or package step must stop deployment.
 - The backend uses PostgreSQL, Flyway, Hibernate validation, UUIDs, and JPQL
   projections. Repository tests must therefore use PostgreSQL, not H2.
 
@@ -586,19 +624,29 @@ The backend deployment workflows run tests before deployment:
 
 Clean compilation prevents stale tests in persistent deployment checkouts.
 Test mail properties are supplied explicitly to the context test; no developer
-environment file or SMTP credentials are required. Keep the following gates:
+environment file or SMTP credentials are required. Deployment workflows use
+read-only repository permissions, pinned checkout actions, environment-scoped
+execution, and non-overlapping concurrency groups for development and
+production. Keep the following gates:
 
-1. Pull request: `./mvnw test` for unit and controller tests.
-2. Pull request or protected branch: run PostgreSQL Testcontainers integration
-   tests where Docker is available.
-3. Only deploy after required tests pass.
-4. Keep a separate explicit deployment step; never treat a successful Docker
+1. Pull request: `./mvnw clean verify` for unit, controller, security, worker,
+   and PostgreSQL Testcontainers tests.
+2. Protected branch and deployment runner: run Maven package with tests enabled
+   before rebuilding containers.
+3. Require the `Verify Backend` check on ordinary pull requests to `develop`
+   through branch protection after the workflow PR merges.
+4. Only deploy after required tests pass.
+5. Keep a separate explicit deployment step; never treat a successful Docker
    build as a substitute for a test pass.
 
 PR #62 adds `.github/workflows/verify.yml` to run the full Maven `verify`
 lifecycle on a GitHub-hosted Ubuntu runner with Java 21 and Docker for pull
 requests targeting `develop`. It uses the committed PostgreSQL 16 Testcontainers
-harness. Deployment gating remains part of #50.
+harness. Issue #55 hardens the workflows with least-privilege permissions,
+pinned actions, deployment environments, concurrency guards, and deployment of
+the exact triggering GitHub SHA after environment approval; frontend PR checks
+and repository branch-protection settings remain separate repository or admin
+tasks.
 
 On 2026-09-12, the committed PostgreSQL 16 Testcontainers harness passed
 `mvnw.cmd clean verify` on local Docker Desktop: 34 tests, zero failures,
@@ -648,3 +696,18 @@ PATCH semantics and retained descendants. Run targeted classes during developmen
 then the complete `mvnw.cmd clean verify` with Docker and zero skipped tests.
 
 Space lifecycle controller coverage also exercises PATCH preflight from configured and untrusted browser origins, including credentials and the allowed-method response.
+
+## Membership verification (#67)
+
+MembershipServiceTest covers authorization before target reads and administrator
+mutation guards. MembershipControllerTest covers JWT and JSON status/validation
+boundaries. MembershipHttpIntegrationTest executes the real authenticated CRUD
+journey and checks generated OpenAPI. MembershipIntegrationTest runs PostgreSQL
+race, V24-to-V25 migration, scoped paging/count, deleted-row, privilege-subset and
+historical retention cases. Run these first, then the full clean verify; no tests
+are disabled without Docker. Local startup and HTTP smoke remain separate gates.
+
+When adding a repository dependency, update the existing database-free
+KheeraBackendApplicationTests repository mocks as well as real PostgreSQL tests.
+A new repository bean cannot be discovered in that intentionally isolated context.
+Keep the full-context PostgreSQL journeys to verify actual wiring and queries.

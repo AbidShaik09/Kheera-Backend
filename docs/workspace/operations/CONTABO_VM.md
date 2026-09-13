@@ -148,8 +148,8 @@ Workflow definitions live in both deployment worktrees under `.github/workflows/
 
 | Component | Branch trigger | Deployment directory | Deployment action |
 | --- | --- | --- | --- |
-| Backend production | `main` | `/opt/apps/prod/kheera-backend/Kheera-Backend` | `git pull origin main`; Maven package with `-DskipTests`; `docker compose down/up -d --build` |
-| Backend development | `develop` | `/opt/apps/develop/kheera-backend/Kheera-Backend` | `git pull origin develop`; Maven package with `-DskipTests`; dev compose down/up with build |
+| Backend production | `main` | `/opt/apps/prod/kheera-backend/Kheera-Backend` | Fetch and check out the triggering `GITHUB_SHA`; Maven package with tests enabled; `docker compose down/up -d --build` |
+| Backend development | `develop` | `/opt/apps/develop/kheera-backend/Kheera-Backend` | Fetch and check out the triggering `GITHUB_SHA`; Maven package with tests enabled; dev compose down/up with build |
 | Frontend production | `main` | `/opt/apps/prod/kheera-frontend/Kheera-Frontend` | `git fetch`; `git reset --hard origin/main`; compose down/up with build; image prune |
 | Frontend development | `develop` | `/opt/apps/develop/kheera-frontend/Kheera-Frontend` | `git fetch`; `git reset --hard origin/develop`; dev compose down/up with build; image prune |
 
@@ -168,9 +168,10 @@ deployment and deployed-browser smoke verification remain pending merge.
 Backend PR #62 adds a separate `Verify Backend` pull-request workflow on
 GitHub-hosted Ubuntu with Java 21 and PostgreSQL Testcontainers. It runs Maven
 `verify` with read-only repository permissions and no deployment credentials.
-Local Docker-backed verification also passed on 2026-09-12. The self-hosted
-deployment workflows above still skip tests; enforcing deployment
-gates remains tracked in backend #50.
+Local Docker-backed verification also passed on 2026-09-12. Backend #55 adds
+workflow concurrency, pinned deployment checkout actions, environment-scoped
+deployment jobs, test-enabled Maven package, and deployment from the exact
+triggering GitHub SHA instead of the latest branch tip after approval.
 
 ## Observed Repository State
 
@@ -197,7 +198,7 @@ Backend deployment remotes use GitHub SSH; production frontend used an HTTPS rem
 2. **[P1] Restore a backup strategy.** The designated backup directory was empty. Define automated PostgreSQL logical backups, off-host retention, encryption, and restore tests.
 3. **[P1] Reconcile development worktrees.** The observed branch/remote divergence can cause deployments to build a different revision than expected. Resolve it before relying on the next development deployment.
 4. **[P2] Verify firewall behavior for Docker-published ports.** Confirm from an external network that direct 4200/4201/8080/8081 access is blocked; if not, remove host port mappings or add Docker/UFW policy.
-5. **[P2] Add CI tests before deployment.** Both backend deployment workflows build with `-DskipTests`; production and development should gate deployment on tests.
+5. **[P2] Finish cross-repository CI hardening.** Backend deployment workflows now build with tests enabled; frontend PR/deployment checks and repository branch-protection settings still need owner/admin verification.
 6. **[P2] Pin infrastructure images and add health checks.** `nginx:latest` is unpinned and compose services have no health checks. Pin versions and define readiness checks.
 7. **[P3] Plan maintenance reboot.** The VM has been up for 109 days and reports a required reboot plus pending updates. Schedule a maintenance window.
 8. **[P3] Consider a no-downtime ACME method.** The current pre/post hooks solve renewal correctly but briefly stop Nginx. A webroot challenge mounted into the proxy or a dedicated ACME-capable proxy would avoid that interruption.

@@ -35,99 +35,116 @@ integrate the new commits safely, and recheck the result; never force-push.
 
 ## Mandatory Delivery Flow
 
-1. Create or confirm a GitHub issue before changing a feature, bug, security
-   concern, migration, API behavior, or production configuration. The issue
-   must state the problem, scope, acceptance criteria, security impact, and
-   relevant links, screenshots, API examples, or design attachments.
-2. Add the issue to `docs/planning/IMPLEMENTATION_TODO.md` in dependency order.
-   Do not start implementation if the issue has no acceptance criteria.
-3. Read the full issue and all attached references before coding. Verify the
-   API contract, Flyway schema, affected consumers, existing test coverage, and
-   external links rather than guessing requirements.
-4. Start only from an up-to-date, clean local `develop` branch. Create a branch
-   named `issue/<number>_<short-kebab-title>`, for example
-   `issue/51_fix-password-reset-otp`. Never use `main` as a feature base.
-5. Create a clean loosely coupled plan to implement the feature/ Fix Bug. Think in terms of whole Application and not just current Feature
-6. Maintain notes of plan based on github issue naming
-7. Follow Test Driven Development, Write Unit Tests or update existing Tests Based on the requirement and development plan. 
-8. For a bug, first write a failing regression test. For a feature, write or
-   update the relevant unit tests before implementation. Mock collaborators
-   outside the unit under test; use PostgreSQL Testcontainers for repository
-   queries, mappings, migrations, or PostgreSQL-specific behavior. 
-9. Implement the smallest complete change that meets the acceptance criteria.
-   Keep naming explicit, remove dead code, and update tests whenever the
-   contract or expected behavior changes.
-10. Before pushing any issue branch, run the backend locally using the appropriate development configuration `.\mvnw.cmd spring-boot:run` . A successful build alone is not sufficient.  
-    Verify that:
-    - the application starts successfully and remains healthy;
-    - /api/health responds successfully;
-    - the API behavior affected by the issue is exercised locally using appropriate requests;
-    - expected success and relevant failure/authorization cases behave according to the acceptance criteria;
-    - Swagger/OpenAPI reflects API changes where applicable.
-      If local verification cannot be completed, do not push or merge. Document the blocker and ask the repository owner for guidance. Missing packages or tooling may be installed only after receiving permission.
-11. If relevant, Visit `/api/swagger-ui/index.html` or raw swagger docs to verify API controller reflects changes
-2Update every relevant document under `docs/workspace/` and the backend
-   `docs/` directory according to
-   `../workspace/governance/DOCUMENTATION_STANDARDS.md`. Update architecture,
-   API/schema/design records during implementation; update progress and history
-   after a material merge or deployment. 
-13. During implementation, run the tests relevant to the changed behavior frequently. Before a PR is considered ready, run the entire backend unit test suite and ./mvnw verify.  
-    Docker-backed and Testcontainers tests are mandatory. Run `docker info` and
-    `./mvnw clean verify` against the committed test harness before pushing,
-    resolving review comments, or declaring a PR ready. All tests must execute
-    with zero skipped tests. Do not use `-DskipTests`, `-Dmaven.test.skip=true`,
-    test exclusions, `disabledWithoutDocker`, or a substitute database harness
-    to bypass Docker tests. A missing or inaccessible Docker engine is a
-    verification blocker to fix, never a passing or skipped result. Retry
-    sandbox-restricted Docker access with the appropriate permissions.
-    Earlier Docker-unavailable exceptions are superseded by this rule.
-    After merging upstream changes or resolving conflicts, rerun clean
-    verification on the resulting branch and record the command and test counts.
-14. Before requesting a push, self-review the diff for correctness, edge cases,
-   authorization, validation, errors, concurrency, logging, secrets, and API
-   compatibility. Run the relevant test suite and the full backend build. 
-15. When asked to push, push only the issue branch and create a pull request to
-   `develop`, never `main`. After checking the diff, if the change contains
-   only documentation or workflow-rule text, the repository owner's standing
-   instruction is to push it directly to `develop`, including documentation
-   produced while completing an authorized task. Do not require a separate
-   push request or leave completed docs-only updates uncommitted. Update
-   `docs/workspace/progress/CHANGE_HISTORY.md`, commit
-   the docs-only change, and push it directly to `develop`. Docs-only direct
-   pushes must not contain code, schema, runtime configuration, dependency, or
-   generated artifact changes. Do not merge before code review and required
-   checks pass. After the PR is created, mark the GitHub issue closed and keep
-   any remaining review, CI, merge, or deployment follow-up on the pull request.
-16. Everytime there is a change made to the CORE schema, create a new relevant migration
-17. Validation rules take precedence over delivery instructions. An instruction such as “push,” “create PR,” or “merge” does not imply permission to bypass any validation gate. If a required gate fails, stop the delivery process, report the failure, and fix it or request guidance.
+Follow these steps in order. "Push", "create PR", or "merge" does not bypass a
+validation gate. The docs-only exception below is the only alternate path.
 
+1. Complete **Mandatory Develop Synchronization** above. Read the full issue,
+   attachments, API contract, Flyway schema, consumers, and existing tests.
+   Confirm the problem, scope, acceptance criteria, security impact, dependencies,
+   and whether a separate PR is required. Resolve blocking ambiguity before coding.
+2. Create `issue/<number>_<short-kebab-title>` from the verified baseline.
+   Add/update the issue in `docs/planning/IMPLEMENTATION_TODO.md` in dependency
+   order. Create and commit the **Required Issue Plan** below.
+3. Write tests first. For bugs, reproduce the defect with a failing regression
+   test. For features, add tests for the specified behavior before implementing it.
+   Run them and record the expected failure; a setup error is not a valid failing
+   behavior test. Mock collaborators outside the unit under test. Use PostgreSQL
+   Testcontainers for repository queries, mappings, migrations, and database behavior.
+4. Implement in the plan's dependency order: new Flyway migration and compatible
+   mapping when schema changes; repository methods; service/business rules and
+   transaction boundaries; controller/DTO/error handling. Write each layer's tests
+   before its implementation. Mark unused layers inapplicable with a reason.
+   Keep the change within the acceptance criteria.
+5. Run targeted tests after each phase. If a test fails, inspect the application
+   contract, fix the defect, and rerun the failed test plus affected regression
+   tests. Do not weaken assertions or change expectations just to get a pass.
+6. Update affected API, database, architecture, testing, README, and TODO docs
+   with the implementation, following
+   [documentation standards](../workspace/governance/DOCUMENTATION_STANDARDS.md).
+   Record validation evidence and deviations in the plan.
+7. Start the backend locally with the development configuration using
+   `./mvnw spring-boot:run` (`.\mvnw.cmd spring-boot:run` on Windows).
+   Confirm it remains healthy, `/api/health` succeeds, and affected endpoints
+   meet success, failure, validation, and authorization criteria. For API changes,
+   inspect `/api/swagger-ui/index.html` or raw OpenAPI.
+8. Run `docker info` and `./mvnw clean verify` (use `.\mvnw.cmd` on Windows).
+   The entire unit suite and Docker/Testcontainers tests must execute with zero
+   skipped tests. Never use skip flags, exclusions, `disabledWithoutDocker`, or
+   substitute databases to bypass tests. Record commands and test counts.
+9. If any regression or required check fails, fix branch-caused defects and
+   repeat the failed checks, affected local smoke checks, and full clean
+   verification. Repeat until all gates pass. After upstream integration,
+   conflict resolution, or review fixes, rerun validation on the resulting branch.
+   Never report an earlier run as evidence for changes it did not test.
+10. Self-review the final diff against every acceptance criterion and plan step:
+    correctness, edge cases, authorization, validation, concurrency, errors,
+    logging, secrets, compatibility, cleanup, and documentation.
+11. When delivery is requested, commit and push the issue branch and create a PR
+    targeting `develop`. Include the issue, plan link, change summary, exact
+    verification evidence, and remaining limitations. Immediately request Codex
+    review as specified below. Under the backend's existing issue policy, close
+    the issue after PR creation; track CI, review, merge, and deployment on the PR.
+12. Inspect CI and reviews. Ordinary pull requests to `develop` must receive a
+    successful `Verify Backend` check before merge; repository branch protection
+    should require that check and should not expose deployment secrets to PR
+    workflows. Fix valid findings, rerun required validation, push
+    the fixes, resolve addressed threads with evidence, and request a fresh
+    `@codex review`. A review request alone is not a completed review.
+13. Review blockers and misunderstandings encountered. Update relevant rules
+    when a concrete change would prevent recurrence. If the user stops work for
+    wrong direction, identify the cause and correct the issue/rules before resuming.
+14. Merge only after required checks, review, and applicable merge authorization.
+    After merge/deployment, update progress/history and perform the development
+    deployment smoke check. Keep pending steps visibly pending in the plan.
 
-18. If a required networked command fails because of sandbox or environment
-   restrictions, retry the same command with the proper escalation/permission
-   request before changing the implementation plan. Examples include
-   `git fetch`, `git push`, Maven dependency downloads, and required local
-   verification that cannot complete without network access. Record the reason
-   in the progress update or PR verification notes when it affects delivery.
-19. After every PR is created, identify any blockers, friction, or repeated
-   failure pattern from the issue. Decide whether a new or updated rule would
-   make similar future work easier, safer, or less ambiguous. If yes, update
-   the relevant engineering, documentation, testing, or issue-creation rule
-   before considering the task complete.
-20. After fixing and resolving GitHub PR review comments, always add a new PR
-   comment containing exactly `@codex review` so Codex performs a fresh review
-   of the updated pull request.
-21. If the user stops execution and says the AI was not on the right track,
-   pause implementation work and identify the root cause of the
-   misunderstanding. Before resuming similar implementation work, update the
-   relevant documentation, GitHub issue creation rules, or implementation rules
-   so future issues carry clearer scope, sequencing, branch, PR, or validation
-   instructions.
-22. resulting pipeline becomes:
-Issue → TODO → Plan → tests/TDD → implementation → targeted tests → local backend startup → health/API smoke verification → full unit suite → mvnw verify → self-review → docs → push → PR → close issue → blocker/rule review → CI → review → resolve comments → @codex review → merge to develop → dev deployment smoke check.
+### Blockers and docs-only delivery
 
-If the worktree is dirty or the repository has no `develop` branch, stop before
-switching branches. Preserve existing work and resolve the branch baseline with
-the repository owner first.
+If required local verification cannot run, stop delivery, document the blocker,
+and fix it or ask the owner for guidance. Missing tooling requires permission
+before installation. Retry sandbox-restricted network/Docker commands with the
+appropriate permissions before changing the plan. Missing Docker is a blocker,
+not a passing or skipped result. Before declaring Docker unavailable, follow
+[Windows Docker Desktop recovery](../testing/TESTING_STRATEGY.md#windows-docker-desktop-readiness-and-recovery):
+retry sandbox access with host permissions, start the installed Desktop runtime
+when needed, and wait for a successful engine response. A closed Desktop window
+or a working CLI alone does not establish engine state.
+
+For owner-requested documentation/rule-only changes, use synchronized clean
+`develop`, inspect the diff and verify links/instructions, update
+`docs/workspace/progress/CHANGE_HISTORY.md`, commit, and push directly to
+`develop` under the standing instruction. No issue, implementation plan,
+application tests, or PR is required for this path. It must contain no code,
+schema, runtime configuration, dependency, or generated artifact changes.
+Issue plans accompanying implementation stay on the issue branch and in its PR.
+
+## Required Issue Plan
+
+Before changing application code or tests, create
+`docs/planning/issue-plans/issue-<number>_<short-kebab-title>.md` on the issue
+branch. Start from the [issue-plan template](../planning/issue-plans/README.md).
+One issue gets one plan; grouped PRs must link each issue's plan.
+
+The initial plan must be executable by another bot without guessing: map each
+acceptance criterion to named tests and implementation steps, identify affected
+files and contracts, list dependencies and risks, and specify exact commands,
+expected results, and manual checks. Include every applicable delivery gate
+in these standards, including documentation, regression, PR creation, and Codex review.
+Replace template placeholders before implementation. Mark inapplicable steps
+with a reason; never silently omit a gate. Missing requirements or unresolved
+contract/design decisions that affect implementation must be clarified before
+coding.
+
+Use ordered checkboxes. Before each phase, compare the next step with the issue
+and plan. Record new evidence, scope decisions, and reasons for changes before
+continuing; obtain clarification when a change alters the requested scope.
+Keep completed steps and their evidence rather than rewriting history.
+After interruptions, read the plan and repository state before resuming.
+
+Commit the initial plan before application code or test changes. Commit plan
+updates with the work they describe and push them in the implementation PR.
+These documents are expected PR content, not ignored scratch files. Do not
+mark a test, review, merge, or deployment complete until evidence exists.
+Link the plan from the PR and record PR/review URLs in it.
 
 ## GitHub Issue Creation Rules
 
@@ -179,12 +196,12 @@ the repository owner first.
 
 ## Definition of Done
 
+- Issue plan checkboxes and validation evidence reflect the actual delivery state.
 - Issue, acceptance criteria, TODO state, API contract, architecture/progress
   records, and all relevant docs are current.
 - Unit/repository/controller coverage reflects the intended behavior.
-- Relevant tests and `./mvnw verify` pass.
+- Local health/API smoke checks and `./mvnw clean verify` pass with zero skipped tests.
 - Code is self-reviewed for cleanup, security, and edge cases.
-- Run all Unit Tests and ensure no other functionality is Broken, If unit test in other features fail, reach out to application docs to figur out intended behaviour and fix the broken code or update Unit Tests, whichever meets the application requirements
 - PR targets `develop`, documents verification, and awaits review before merge.
 
 ## Codex Review After PR Creation

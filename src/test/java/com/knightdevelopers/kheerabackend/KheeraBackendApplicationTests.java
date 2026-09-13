@@ -5,6 +5,7 @@ import com.knightdevelopers.kheerabackend.repository.OtpRepository;
 import com.knightdevelopers.kheerabackend.repository.SpaceMembersRepository;
 import com.knightdevelopers.kheerabackend.repository.SpacesRepository;
 import com.knightdevelopers.kheerabackend.repository.UserRepository;
+import com.knightdevelopers.kheerabackend.repository.MembershipRoleRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,6 +39,9 @@ class KheeraBackendApplicationTests {
 
     @MockBean
     private SpacesRepository spacesRepository;
+
+    @MockBean
+    private MembershipRoleRepository membershipRoleRepository;
 
     @Test
     void contextLoads() {

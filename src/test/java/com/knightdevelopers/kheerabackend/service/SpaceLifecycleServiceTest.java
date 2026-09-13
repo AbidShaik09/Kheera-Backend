@@ -30,7 +30,7 @@ class SpaceLifecycleServiceTest {
             Spaces space = call.getArgument(0);
             space.setId(UUID.randomUUID());
             assertThat(space.getPermissions()).extracting(SpacePermissions::getPermissionName)
-                    .containsExactlyInAnyOrder("space.update", "space.delete", "space.members.manage");
+                    .containsExactlyInAnyOrderElementsOf(SpaceAccessService.CATALOGUE);
             return space;
         });
         var result = service.create(creator.getEmail(), input("{\"name\":\"  Product  \"}"));
@@ -39,7 +39,7 @@ class SpaceLifecycleServiceTest {
         verify(members).saveAndFlush(argThat(member -> member.getUser() == creator
                 && member.getSpaceRole().getSpace() == member.getSpace()
                 && member.getSpaceRole().getRoleName().equals("Administrator")
-                && member.getSpaceRole().getRolePermissions().size() == 3));
+                && member.getSpaceRole().getRolePermissions().size() == 7));
     }
 
     @Test void inactiveCreatorCannotCreate() throws Exception {

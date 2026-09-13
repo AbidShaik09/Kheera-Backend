@@ -11,9 +11,12 @@ synchronization before edits and issue branches from verified latest develop.
 ## Remaining Foundation Work
 
 - [ ] [#55 Harden CI/CD safety and require relevant test checks on pull requests](https://github.com/AbidShaik09/Kheera-Backend/issues/55).
-  Backend PR verification and test-enabled deployment builds now exist. Finish
-  the remaining cross-repository security/check requirements; do not mark the
-  broader issue complete based on backend deployment success alone.
+  Backend PR verification and test-enabled deployment builds now exist. Issue
+  branch `issue/55_harden-ci-cd-safety` hardens backend workflows with
+  least-privilege permissions, pinned deployment actions, concurrency guards,
+  environment boundaries, and branch-protection documentation. Finish remaining
+  frontend and repository-admin branch-protection work outside the backend code
+  branch before marking the broader cross-repository issue fully complete.
 - [x] [#50 Email worker tests and CI](https://github.com/AbidShaik09/Kheera-Backend/issues/50).
   [PR #64](https://github.com/AbidShaik09/Kheera-Backend/pull/64) was restored,
   reopened, and merged in 86ef05c. Worker coverage and clean test-enabled
@@ -31,12 +34,14 @@ Each implementation issue requires its own branch and PR to `develop`.
 Use the linked acceptance criteria and the canonical
 [API contract](../workspace/api/API_CONTRACT.md).
 
-1. [ ] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
+1. [x] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
    Create/read/update/soft-delete spaces, bootstrap creator permissions atomically,
-   and preserve the existing space-list response. Replaces historical #9. Implemented and locally verified (73 tests, zero skips) on `issue/66_space-lifecycle`; PR review/merge pending; see [plan and validation](issue-66_space-lifecycle.md).
+   and preserve the existing space-list response. Replaces historical #9.
+   PR #74 is verified merged; see [plan and validation](issue-66_space-lifecycle.md).
 2. [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
    Depends on #66; supplies membership management, role/permission reads and
-   last-administrator protection.
+   last-administrator protection. In progress on `issue/67_membership-management`;
+   see [execution plan](issue-plans/issue-67_membership-management.md).
 3. [ ] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45).
    Decide and migrate ordered stages, completion semantics, and task-stage
    relationships before dependent board APIs. Owns the move/position endpoint.
@@ -44,6 +49,7 @@ Use the linked acceptance criteria and the canonical
    fixtures without depending on the project HTTP API.
 4. [ ] [#68 Space-scoped project CRUD and summaries](https://github.com/AbidShaik09/Kheera-Backend/issues/68).
    Child slice of #10; depends on #66/#67 and #45 completion semantics.
+   Blocked until #45 is delivered, per owner instruction on 2026-09-13.
 5. [ ] [#69 Work-item CRUD, hierarchy, and board reads](https://github.com/AbidShaik09/Kheera-Backend/issues/69).
    Child slice of #11; depends on #68, membership authorization, and #45.
    Preserve completed #44 mapping decisions; new relationships need new migrations.

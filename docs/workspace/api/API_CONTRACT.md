@@ -232,15 +232,15 @@ Suggested dashboard response:
 | `GET /api/spaces/{spaceId}` | Implemented | Load the Space Details page. |
 | `PATCH /api/spaces/{spaceId}` | Implemented | Rename/edit description/profile picture. |
 | `DELETE /api/spaces/{spaceId}` | Implemented | Soft-delete a space, permission restricted. |
-| `GET /api/spaces/{spaceId}/members` | Required | People and roles view. |
-| `POST /api/spaces/{spaceId}/members` | Required | Add/invite an existing user to a space. |
-| `PATCH /api/spaces/{spaceId}/members/{memberId}` | Required | Change member role. |
-| `DELETE /api/spaces/{spaceId}/members/{memberId}` | Required | Remove member. |
-| `GET /api/spaces/{spaceId}/roles` | Required | Role configuration. |
+| `GET /api/spaces/{spaceId}/members` | Implemented in #67 branch | Paginated active people and roles. |
+| `POST /api/spaces/{spaceId}/members` | Implemented in #67 branch | Add an existing active user; no invitation. |
+| `PATCH /api/spaces/{spaceId}/members/{memberId}` | Implemented in #67 branch | Change member role. |
+| `DELETE /api/spaces/{spaceId}/members/{memberId}` | Implemented in #67 branch | Soft-delete membership. |
+| `GET /api/spaces/{spaceId}/roles` | Implemented in #67 branch | Paginated active role catalogue. |
 | `POST /api/spaces/{spaceId}/roles` | Required | Create a role. |
 | `PATCH /api/spaces/{spaceId}/roles/{roleId}` | Required | Rename role or replace permission set. |
 | `DELETE /api/spaces/{spaceId}/roles/{roleId}` | Required | Remove unused role. |
-| `GET /api/spaces/{spaceId}/permissions` | Required | Permission catalogue. |
+| `GET /api/spaces/{spaceId}/permissions` | Implemented in #67 branch | Paginated active permission catalogue. |
 
 Suggested create/update payload:
 
@@ -479,3 +479,65 @@ space from the database. For mutations, acquire the active-space write lock befo
 loading descendants. #68/#69 implement those HTTP APIs; they do not exist yet.
 
 PATCH is included in the CORS method allow-list. Configured frontend origins may preflight authenticated metadata updates; untrusted origins remain rejected.
+
+## Issue #67 membership contract (implemented on issue branch)
+
+`memberId` is the membership UUID, never the user UUID. All six endpoints resolve
+JWT email to an active user, space, membership, and same-space active role. Missing
+or deleted callers return 401; invisible spaces and scoped resources return 404.
+Authorized callers with insufficient action/role grants receive 403. Errors use
+`{code,message,fieldErrors}`. Existing authentication text and GET spaces arrays
+remain compatible.
+
+| Action | Permission | Success |
+| --- | --- | --- |
+| GET members, roles, permissions | `space.members.read` | 200 |
+| POST members | `space.members.add` | 201 |
+| PATCH membership | `space.members.change-role` | 200 |
+| DELETE membership, including self | `space.members.remove` | 204 |
+
+POST body is `{email,roleId}`. Email is trimmed, syntactically validated (maximum
+255 characters), and matched exactly to an existing active account, consistently
+with current authentication. There is no invitation, outgoing email or pending
+membership. Unknown/deleted accounts return the same 404. PATCH accepts only
+`{roleId}`; missing/null/invalid role IDs and unknown fields return 400. Role and
+member IDs must belong to the selected space. The caller's effective grants must
+contain every active grant of the requested role and, for update/removal, of the
+member's current role. Knowing an ID cannot grant authority.
+
+Member results are `{id,user:{id,name,email},role:{id,name}}`; passwords and other
+account fields are excluded. Member lists use the standard page envelope. Defaults
+are page=0, size=25, sort=name,asc, q empty. Size is 1..100, page 0..100000; q is at
+most 100 characters and performs case-insensitive literal substring matching on
+name/email (percent/underscore are not wildcards). Sort accepts name, email, role,
+createdAt, updatedAt with asc/desc; membership UUID ascending breaks ties. Invalid
+bounds/sorts return 400. Deleted users, roles, spaces and memberships are excluded
+from both items and totals. User/role fetches are bounded per page, not per item.
+Roles/permissions accept the same page/size bounds, ordered by name then UUID;
+items are `{id,name}`. The permissions endpoint is the space catalogue, not an
+assertion that the caller has every listed grant.
+
+An administrator is an active user/membership/role with all three legacy effective
+grants: space.update, space.delete, space.members.manage. Names do not establish
+administrator status. Removing/demoting the final administrator returns
+409 LAST_ADMINISTRATOR. Self-removal and self-demotion follow the same permissions,
+grant-subset, and last-administrator checks. Mutations serialize on the space row
+before rechecking caller access; two concurrent requests cannot remove/demote the
+last administrator. Unknown/deleted targets return 404. Roles and users cannot be
+edited through this API; future deletion/grant-edit APIs must coordinate this lock.
+
+Active duplicate membership returns 409 DUPLICATE_MEMBERSHIP, even if the active
+row has a deleted role. Rejoining a soft-deleted membership returns 201 and restores
+its original UUID/createdAt with the explicitly requested active role. The unique
+(user_id,space_id) constraint is retained and concurrent add/rejoin requests produce
+one success and one 409. Removal updates only membership deletion/timestamp;
+historical task assignees and comments remain attached to that UUID and confer no
+access. Future assignment APIs must offer only active members and display inactive
+historical assignees appropriately. Reactivation restores access under the new role.
+
+V25 adds the four action permissions to existing active spaces and grants them to
+active roles with space.members.manage. It does not revive deleted grants. New
+space bootstrap creates Administrator with all seven catalogue grants and Member
+with read only. Member provides a safe role for selectors; custom role editing and
+invitations remain future work. Existing spaces retain their roles. Project #68
+remains blocked pending #45 completion semantics, as requested by the owner.

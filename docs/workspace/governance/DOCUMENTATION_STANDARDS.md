@@ -17,7 +17,7 @@ dependency, generated artifact, or production-secret changes.
 
 | Change | Required updates |
 | --- | --- |
-| Any issue | Relevant repository TODO status and issue links. |
+| Any implementation issue | Relevant repository TODO status, issue links, and a committed step-by-step plan at `docs/planning/issue-plans/issue-<number>_<short-kebab-title>.md` in the implementing repository. |
 | New or changed endpoint, request, response, auth, error, or pagination behavior | `api/API_CONTRACT.md`; backend API reference when applicable. |
 | New or changed domain, service boundary, data flow, queue, integration, or deployment topology | `architecture/APPLICATION_ARCHITECTURE.md`. |
 | Schema, entity, repository, migration, constraint, or data-retention change | Backend database design findings and API contract if externally visible. |
@@ -30,10 +30,17 @@ dependency, generated artifact, or production-secret changes.
 
 1. During issue refinement: identify every document that must change and add it
    to the issue acceptance criteria.
+   Before application code or tests, complete and commit the issue plan using
+   the implementing repository's engineering standards and issue-plan template.
+   Map acceptance criteria to tests, ordered implementation steps, exact
+   validation commands, failure/retest loops, documentation, and PR/review gates.
 2. During implementation: update the API, architecture, schema, or design
    document together with the behavior it describes.
 3. Before opening a PR: verify documentation matches the implementation and
    current tests. Include the document paths in the PR description.
+   Include the issue plan in the implementation PR and link it from the PR body.
+   Keep its checkboxes, deviations, and validation evidence current; leave
+   review, merge, and deployment steps pending until they actually occur.
 4. After creating a PR: record any blockers, friction, or repeated
    misunderstandings discovered during the issue. If a rule change would reduce
    the chance of recurrence, update the relevant standards before closing the
