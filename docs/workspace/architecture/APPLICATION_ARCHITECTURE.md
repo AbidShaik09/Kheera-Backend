@@ -95,3 +95,15 @@ through #49.
   cross-layer persistence access or client-supplied authorization fields.
 - Security-sensitive flows require expiry, replay, rate-limit, generic-message,
   and logging review appropriate to the risk.
+
+## Space Lifecycle (#66)
+
+`SpaceLifecycleController` owns metadata HTTP operations while the existing
+`SpaceController` retains the list contract. `SpaceLifecycleService` owns DTO
+mapping and create/update/delete transactions. `SpaceAccessService` centralizes
+active-user/membership/role/permission checks for reuse in membership and child
+services. Repositories use focused membership and permission queries; mutations
+lock the space before checking authority and changing its metadata. A failed
+bootstrap rolls back the entire graph. No controller returns JPA entities.
+See the [space API contract](../api/API_CONTRACT.md#space-lifecycle-contract-66)
+for PATCH, permission catalogue, error and soft-delete behavior.

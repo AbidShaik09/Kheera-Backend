@@ -635,3 +635,14 @@ A backend feature is ready only when it includes:
 - at least one end-to-end journey when the feature crosses security, database,
   and HTTP boundaries; and
 - passing tests in CI before deployment.
+
+## Space Lifecycle Regression Coverage (#66)
+
+`SpaceLifecycleServiceTest` covers creator bootstrap, field validation, PATCH
+omission/null behavior and soft deletion with mocked collaborators.
+`SpaceLifecycleControllerTest` runs the real JWT/security chain and checks statuses,
+JSON errors, forged fields and caller-email delegation. PostgreSQL-backed
+`SpaceLifecycleIntegrationTest` uses Flyway with real transactions to prove
+bootstrap commit/rollback, scoped grants, soft-deleted access rejection, persisted
+PATCH semantics and retained descendants. Run targeted classes during development,
+then the complete `mvnw.cmd clean verify` with Docker and zero skipped tests.

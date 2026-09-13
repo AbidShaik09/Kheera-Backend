@@ -229,3 +229,18 @@ to one. Implement it only if workflows are intended to drive work-item state.
 - `Kheera-Backend/src/main/resources/db/migration/V0023__add_work_item_attachments.sql`
 - `Kheera-Backend/src/main/resources/db/migration/V0024__add_work_item_comments_attachments.sql`
 - JPA entities under `Kheera-Backend/src/main/java/com/knightdevelopers/kheerabackend/entity`
+
+## Issue #66: Transactional Space Bootstrap
+
+The lifecycle service reuses V0007/V0008/V0009/V0011/V0012/V0013 without changing
+schema. Space metadata follows physical limits (255/500/255). Permissions are
+persisted before role grants, followed by membership referencing the managed role,
+all within one transaction. PostgreSQL tests inject a membership constraint failure
+and verify zero remaining space, role, permission, grant and membership rows.
+
+Active membership queries enforce role-to-space consistency; permission queries
+also enforce permission-to-space consistency and filter deleted grants/roles.
+Soft deletion changes only the space and updated_at; foreign-key children remain.
+Lifecycle writes lock the active space row to serialize update/delete operations.
+Future descendant writes must take the same parent lock before accessing children.
+No migration is required because no table, column, constraint or mapping changed.

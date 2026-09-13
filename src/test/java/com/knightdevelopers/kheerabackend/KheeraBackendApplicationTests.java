@@ -3,6 +3,7 @@ package com.knightdevelopers.kheerabackend;
 import com.knightdevelopers.kheerabackend.repository.EmailRepository;
 import com.knightdevelopers.kheerabackend.repository.OtpRepository;
 import com.knightdevelopers.kheerabackend.repository.SpaceMembersRepository;
+import com.knightdevelopers.kheerabackend.repository.SpacesRepository;
 import com.knightdevelopers.kheerabackend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +35,9 @@ class KheeraBackendApplicationTests {
 
     @MockBean
     private SpaceMembersRepository spaceMembersRepository;
+
+    @MockBean
+    private SpacesRepository spacesRepository;
 
     @Test
     void contextLoads() {

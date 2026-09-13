@@ -30,9 +30,16 @@ public class SecurityConfig {
                 )
 
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                        )
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            String path = request.getRequestURI().substring(request.getContextPath().length());
+                            if (path.equals("/api/spaces") || path.startsWith("/api/spaces/")) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json");
+                                response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"Authentication is required.\",\"fieldErrors\":{}}");
+                            } else {
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                            }
+                        })
                 )
 
                 .authorizeHttpRequests(auth -> auth
