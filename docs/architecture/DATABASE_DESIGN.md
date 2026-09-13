@@ -244,3 +244,31 @@ Soft deletion changes only the space and updated_at; foreign-key children remain
 Lifecycle writes lock the active space row to serialize update/delete operations.
 Future descendant writes must take the same parent lock before accessing children.
 No migration is required because no table, column, constraint or mapping changed.
+
+## Membership invariants (#67 branch)
+
+V25__membership_action_permissions.sql expands the per-space permission catalogue
+and maps existing active manage grants to read/add/change-role/remove. Existing
+soft-deleted grants are retained; the migration never reactivates them. New-space
+bootstrap also creates a read-only Member role. No entity column changes are
+needed. Roll forward with a new migration for corrections; never edit an applied
+migration. Old binaries ignore the extra catalogue entries, but must not be used
+to introduce concurrent membership mutation paths.
+
+Membership add/update/remove transactions acquire the same active space row lock
+used by space lifecycle writes, then resolve current authority and target rows.
+This serializes duplicate/rejoin and last-administrator decisions under PostgreSQL
+READ COMMITTED. Administrator classification uses the three legacy grant names,
+not role display text. The existing unique (user_id,space_id) constraint remains;
+rejoin restores that row, retaining historical work-item/comment references.
+
+Membership and catalogue pages exclude deleted ancestors/users/roles and use
+bounded stable ordering. Member pages fetch user and role once with the page plus
+its count query; PostgreSQL tests assert query count stays bounded as page size
+increases. Permission queries require same-space roles and permissions.
+
+Future account deletion, role deletion, or grant mutation must lock affected spaces
+and preserve the administrator invariant. These APIs are outside #67; direct SQL
+administration can violate application invariants and must be reviewed accordingly.
+Tests cover V24-to-V25 data migration, revoked grants, concurrent add/rejoin and
+administrator changes, filtering, permission escalation and retained assignments.

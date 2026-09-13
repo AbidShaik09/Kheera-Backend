@@ -107,3 +107,18 @@ lock the space before checking authority and changing its metadata. A failed
 bootstrap rolls back the entire graph. No controller returns JPA entities.
 See the [space API contract](../api/API_CONTRACT.md#space-lifecycle-contract-66)
 for PATCH, permission catalogue, error and soft-delete behavior.
+
+## Membership management (#67 branch)
+
+MembershipController returns DTOs and delegates to MembershipService, which owns
+transactions. SpaceAccessService resolves JWT email and current membership/action
+permissions before any target directory read. All membership writes lock the space
+and recheck access so revocation and administrator changes serialize. The role and
+membership repositories constrain joins to active same-space resources. Action
+grants are separate and requested/current role grants must be subsets of caller
+authority. The API adds existing users only and has no SMTP/invitation dependency.
+
+Soft-deleted memberships retain task/comment references. Descendant services must
+call SpaceAccessService in their transaction; a historical assignment never grants
+access. See API_CONTRACT.md for the pagination, administrator and rejoin contract.
+Project #68 is blocked on #45; this change introduces no project/workflow endpoint.

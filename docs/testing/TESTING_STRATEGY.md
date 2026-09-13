@@ -696,3 +696,18 @@ PATCH semantics and retained descendants. Run targeted classes during developmen
 then the complete `mvnw.cmd clean verify` with Docker and zero skipped tests.
 
 Space lifecycle controller coverage also exercises PATCH preflight from configured and untrusted browser origins, including credentials and the allowed-method response.
+
+## Membership verification (#67)
+
+MembershipServiceTest covers authorization before target reads and administrator
+mutation guards. MembershipControllerTest covers JWT and JSON status/validation
+boundaries. MembershipHttpIntegrationTest executes the real authenticated CRUD
+journey and checks generated OpenAPI. MembershipIntegrationTest runs PostgreSQL
+race, V24-to-V25 migration, scoped paging/count, deleted-row, privilege-subset and
+historical retention cases. Run these first, then the full clean verify; no tests
+are disabled without Docker. Local startup and HTTP smoke remain separate gates.
+
+When adding a repository dependency, update the existing database-free
+KheeraBackendApplicationTests repository mocks as well as real PostgreSQL tests.
+A new repository bean cannot be discovered in that intentionally isolated context.
+Keep the full-context PostgreSQL journeys to verify actual wiring and queries.

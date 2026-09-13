@@ -36,6 +36,14 @@ public class SpaceLifecycleService {
             administrator.getRolePermissions().add(grant);
         }
         space = spaces.saveAndFlush(space);
+        SpaceRoles memberRole = new SpaceRoles(); memberRole.setRoleName("Member"); space.addRole(memberRole);
+        for (SpacePermissions permission : space.getPermissions()) {
+            if (SpaceAccessService.MEMBER_READ.equals(permission.getPermissionName())) {
+                SpaceRolePermissions grant = new SpaceRolePermissions(); grant.setSpaceRole(memberRole); grant.setSpacePermission(permission);
+                memberRole.getRolePermissions().add(grant);
+            }
+        }
+        space = spaces.saveAndFlush(space);
         space.addMember(creator, space.getRoles().getFirst());
         members.saveAndFlush(space.getSpaceMembers().getFirst());
         return dto(space, SpaceAccessService.CATALOGUE);

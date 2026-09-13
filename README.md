@@ -332,3 +332,10 @@ This project is part of a 90-day challenge to:
 We are not just building a project.
 
 We are building engineers.
+
+# Membership API
+
+Issue #67 adds active-member management and paginated roles/permissions under
+`/api/spaces/{spaceId}`. See the [membership contract](docs/workspace/api/API_CONTRACT.md#issue-67-membership-contract-implemented-on-issue-branch)
+for permissions, last-administrator protection, request bodies and rejoin behavior.
+It adds existing active users only; invitations and custom role editing are future work.

@@ -34,12 +34,14 @@ Each implementation issue requires its own branch and PR to `develop`.
 Use the linked acceptance criteria and the canonical
 [API contract](../workspace/api/API_CONTRACT.md).
 
-1. [ ] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
+1. [x] [#66 Space lifecycle and creator membership](https://github.com/AbidShaik09/Kheera-Backend/issues/66).
    Create/read/update/soft-delete spaces, bootstrap creator permissions atomically,
-   and preserve the existing space-list response. Replaces historical #9. Implemented and locally verified (73 tests, zero skips) on `issue/66_space-lifecycle`; PR review/merge pending; see [plan and validation](issue-66_space-lifecycle.md).
+   and preserve the existing space-list response. Replaces historical #9.
+   PR #74 is verified merged; see [plan and validation](issue-66_space-lifecycle.md).
 2. [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
    Depends on #66; supplies membership management, role/permission reads and
-   last-administrator protection.
+   last-administrator protection. In progress on `issue/67_membership-management`;
+   see [execution plan](issue-plans/issue-67_membership-management.md).
 3. [ ] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45).
    Decide and migrate ordered stages, completion semantics, and task-stage
    relationships before dependent board APIs. Owns the move/position endpoint.
@@ -47,6 +49,7 @@ Use the linked acceptance criteria and the canonical
    fixtures without depending on the project HTTP API.
 4. [ ] [#68 Space-scoped project CRUD and summaries](https://github.com/AbidShaik09/Kheera-Backend/issues/68).
    Child slice of #10; depends on #66/#67 and #45 completion semantics.
+   Blocked until #45 is delivered, per owner instruction on 2026-09-13.
 5. [ ] [#69 Work-item CRUD, hierarchy, and board reads](https://github.com/AbidShaik09/Kheera-Backend/issues/69).
    Child slice of #11; depends on #68, membership authorization, and #45.
    Preserve completed #44 mapping decisions; new relationships need new migrations.

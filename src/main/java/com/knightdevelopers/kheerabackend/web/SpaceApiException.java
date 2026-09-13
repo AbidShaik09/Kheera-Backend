@@ -25,4 +25,10 @@ public class SpaceApiException extends RuntimeException {
     public static SpaceApiException forbidden() {
         return new SpaceApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You do not have permission for this action.", Map.of());
     }
+    public static SpaceApiException resourceNotFound() {
+        return new SpaceApiException(HttpStatus.NOT_FOUND, "NOT_FOUND", "Resource not found.", Map.of());
+    }
+    public static SpaceApiException conflict(String code, String message) {
+        return new SpaceApiException(HttpStatus.CONFLICT, code, message, Map.of());
+    }
 }

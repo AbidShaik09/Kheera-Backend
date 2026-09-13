@@ -65,7 +65,7 @@ class SpaceLifecycleIntegrationTest extends PostgreSqlIntegrationTest {
         var created = service.create("owner@example.com", input("{\"name\":\"Space\"}"));
         assertThat(members.findActiveSpacesByUserEmail("owner@example.com")).hasSize(1);
         assertThat(service.detail("owner@example.com", created.id()).capabilities().canManageMembers()).isTrue();
-        assertThat(jdbc.queryForObject("select count(*) from space_role_permissions", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("select count(*) from space_role_permissions", Integer.class)).isEqualTo(8);
         jdbc.update("insert into projects(project_name, space_id) values ('Retained project', ?)", created.id());
         service.delete("owner@example.com", created.id());
         assertThat(members.findActiveSpacesByUserEmail("owner@example.com")).isEmpty();
@@ -137,7 +137,7 @@ class SpaceLifecycleIntegrationTest extends PostgreSqlIntegrationTest {
         var patch = input("{\"name\":\"Forged\"}");
         assertThatThrownBy(() -> service.update("owner@example.com", first.id(), patch))
                 .isInstanceOfSatisfying(SpaceApiException.class, ex -> assertThat(ex.status().value()).isEqualTo(403));
-        jdbc.update("update space_members set space_role_id=(select id from space_roles where space_id=?) where space_id=?", second.id(), first.id());
+        jdbc.update("update space_members set space_role_id=(select id from space_roles where space_id=? and role_name='Administrator') where space_id=?", second.id(), first.id());
         assertThatThrownBy(() -> service.detail("owner@example.com", first.id()))
                 .isInstanceOfSatisfying(SpaceApiException.class, ex -> assertThat(ex.status().value()).isEqualTo(404));
     }
