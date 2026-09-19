@@ -6,7 +6,7 @@
 - Branch and synchronized develop commit: `issue/45_workflow-stages` from `380c574a0c5973cb3d06d8753e62a869c0cf70ca`.
 - Problem and intended behavior: `project_workflows` exists but has neither ordering nor a work-item relationship. A project needs ordered board columns, and every active work item must belong to an active column in the same project.
 - In scope: migrate `project_workflows` into the canonical workflow-stage table by adding `position` and `is_complete`; backfill an ordered Backlog stage for projects without stages; add a non-null work-item stage/position relationship; stage list/create/update/delete APIs; an authorized work-item move API; DTOs, repositories, service validation, PostgreSQL and controller tests; contract/architecture/progress documentation.
-- Out of scope: project CRUD and general work-item CRUD/listing, stage type administration, sprints, comments, and frontend board wiring. #68 creates projects and must provision their initial stages; #69 owns normal work-item board reads/CRUD and consumes this schema.
+- Out of scope: project CRUD, general work-item writes/details and non-stage filters, type administration, sprints, comments, and frontend board wiring. #45 supplies the stage-filtered/grouped paginated board read explicitly required by its acceptance criteria; #69 extends that route.
 - Dependencies and blockers: #66 and #67 are merged in the baseline. #68 and #69 are open, so their controllers are not duplicated. The move endpoint is implemented against persisted work items so it can be consumed when #69 lands.
 - References read: issue #45, `docs/engineering/ENGINEERING_STANDARDS.md`, API contract, database design, existing Flyway migrations/entities, access service, and membership tests.
 - Open decisions: resolved—`project_workflows` represents board stages. Positions are zero-based, contiguous within each project/stage; moving to position `n` clamps to the end; a stage may be deleted only when it has no active work items. Completion is semantic (`is_complete`), never inferred from a name.
@@ -15,11 +15,12 @@
 
 | Criterion | Named test / manual check | Expected result |
 | --- | --- | --- |
-| A project has ordered board stages | `WorkflowStageServiceTest.listStagesOrdersByPosition` and PostgreSQL migration test | Stages sort by position then UUID; legacy projects gain Backlog. |
-| Board-visible work items have a stage in their own project | migration integration test and `WorkflowStageServiceTest.moveRejectsForeignProjectStage` | Migration backfills/assigns; moves across project boundary are rejected. |
-| Stages can be listed and maintained by authorized members | `WorkflowStageControllerTest` | Read needs membership; writes require `space.update`; validation/error responses match contract. |
-| A work item can move safely | `WorkflowStageServiceTest.moveReordersSourceAndTargetStages` | Source and target positions are gap-free; row is locked and stage/project is validated. |
-| Existing data is compatible | Flyway PostgreSQL integration test | V26 applies to the old schema, preserves data, backfills stages, and establishes FK/indexes. |
+| A project has ordered board stages | WorkflowBoardIntegrationTest.freshProjectsHaveSixOrderedStagesAndSemanticCompletion | Six ordered columns; only default Done is complete. |
+| Board-visible items have a stage in their project | WorkflowBoardIntegrationTest.schemaRejectsForeignProjectStage | Composite FK and active-stage checks reject invalid references. |
+| Filter/group board reads | WorkflowBoardIntegrationTest.groupedPaginationIncludesEmptyColumnsAndOnlyCurrentPage | Correct page totals, stage groups and empty columns. |
+| Stage administration and access | WorkflowBoardIntegrationTest.stageAdministrationReordersWithoutUniqueCollisionsAndProtectsNonemptyAndLastStage; excludesDeletedMembershipUserRoleSpaceAndWorkItem | Correct CRUD, permission and deletion boundaries. |
+| Safe moves | WorkflowBoardIntegrationTest.moveReordersItemsAndFilteredBoardReturnsTheirPositions; concurrentMovesPreserveContiguousUniquePositions; concurrentStageDeletionAndMoveCannotLeaveAnActiveItemInADeletedStage | Atomic contiguous order; both serial race outcomes are safe. |
+| Existing data migration | WorkflowMigrationIntegrationTest.upgradesLegacyProjectsStagesAndItemsWithoutLosingRecords | V25 fixtures retain IDs/items through V26, including null names and deleted stages. |
 
 ## Design and affected files
 
@@ -33,14 +34,14 @@
 ## Ordered execution checklist
 
 - [x] Confirm issue requirements, dependencies, references, and latest develop.
-- [ ] Update TODO and complete/commit this initial plan before code or tests.
-- [ ] Write and run failing unit/PostgreSQL/controller tests; record expected failures.
-- [ ] Add V26 migration and compatible mappings, with database tests.
-- [ ] Implement repositories and service transaction/authorization rules; run service tests.
-- [ ] Implement controllers, DTOs, and errors; run controller tests.
-- [ ] Update API, schema, architecture, progress, history, and TODO documents.
-- [ ] Start locally; verify health, affected API success/failure/auth, and OpenAPI.
-- [ ] Run `docker info` and `./mvnw.cmd clean verify`; record counts and zero skips.
+- [x] Update TODO and complete/commit this initial plan before code or tests (912d596).
+- [x] Write and run failing PostgreSQL/MockMvc behavior tests (four failures against draft); tests-first deviation recorded below.
+- [x] Add V26 migration and compatible mappings, with database tests.
+- [x] Implement repositories and service transaction/authorization rules; run service tests.
+- [x] Implement controllers, DTOs, and errors; run real JWT/MockMvc tests.
+- [x] Update API, schema, architecture, progress, README, testing and TODO docs. Release history remains pending merge under documentation policy.
+- [x] Start locally; verify health, affected API success/failure/auth, and OpenAPI.
+- [x] Run `docker info` and `./mvnw.cmd clean verify`; 107 tests, zero failures/errors/skips.
 - [ ] Self-review, commit/push issue branch, create PR to `develop`, and request Codex review.
 - [ ] Inspect CI/reviews, fix valid findings, and follow the repository issue-closure policy.
 
@@ -49,16 +50,18 @@
 | Step | Command or manual procedure | Expected | Actual result / counts / evidence | Tested commit or working-tree state |
 | --- | --- | --- | --- | --- |
 | Baseline synchronization | `git fetch origin develop` then `git merge --ff-only origin/develop` | HEAD equals origin/develop and clean | Passed: both `380c574a0c5973cb3d06d8753e62a869c0cf70ca` | initial branch |
-| Focused tests | `./mvnw.cmd test -Dtest=...` | Tests demonstrate behavior then pass after implementation | Pending | pending |
-| Database migration tests | `./mvnw.cmd test -Dtest=...IntegrationTest` with Docker | PostgreSQL/Flyway passes, no skips | Pending | pending |
-| Local smoke | `./mvnw.cmd spring-boot:run`, health and authenticated API requests | Health plus stage/move outcomes | Pending | pending |
-| Full verification | `docker info`; `./mvnw.cmd clean verify` | Zero failures/errors/skips | Pending | pending |
+| Initial regression | `./mvnw.cmd test -Dtest=WorkflowBoardIntegrationTest` | Expose missing behavior | 4 failed: hidden routes and missing JSON auth error; fixed | 2026-09-14 draft |
+| Database/HTTP targeted | `./mvnw.cmd test -Dtest=WorkflowMigrationIntegrationTest,WorkflowBoardIntegrationTest` | PostgreSQL/Flyway passes | 12 passed, zero skips | 2026-09-19 implementation |
+| Local smoke | `./mvnw.cmd spring-boot:run` with dedicated local PostgreSQL, port 18045; HTTP health, stages, move, grouped board and OpenAPI | Success and error outcomes | Passed 200/201/400/401/403/404/409 checks; health remained 200 | 2026-09-19 final production code |
+| Full verification | `docker info`; `./mvnw.cmd clean verify` | Zero failures/errors/skips | Docker 29.7.2; 107 tests passed, zero failures/errors/skips; packaged successfully | 2026-09-19 final code and tests |
 
 ## Plan changes and resume notes
 
 | Date | New evidence / deviation | Reason and scope decision | Steps/checks to repeat |
 | --- | --- | --- | --- |
 | 2026-09-14 | #68 and #69 remain open after foundation #66/#67 merged. | Implement only stage administration and explicit move behavior; do not preempt project/work-item CRUD. | All implementation and validation steps. |
+| 2026-09-14 | Initial draft omitted the explicit #45 board-read criterion, wrote implementation before behavioral tests, and used conditional beans to mask missing test mocks. | Corrected scope to include stage-filtered/grouped reads; removed conditional production beans and added repository mocks only in the no-database context test. Four new HTTP integration tests failed against the draft, then passed after corrections. This documents the earlier tests-first deviation rather than claiming compliance. | Full verification and migration tests. |
+| 2026-09-19 | Resumed from saved work; origin/develop is still 380c574. | Six default stages are provisioned by a project-insert trigger, including existing projects without active stages. Custom stage IDs survive migration; their completion stays false until explicitly classified. Composite FK enforces project ownership; deferred active-position uniqueness permits transactional reordering. Writers lock space then project, matching membership/deletion locking. | Re-run focused tests, clean verify, local HTTP smoke and self-review. |
 
 ## Delivery
 
@@ -67,4 +70,5 @@
 - Follow-up review URLs and findings: Pending.
 - CI results: Pending.
 - Merge/deployment status and evidence: Pending.
-- Remaining steps or blockers: Implementation and required verification pending.
+- Self-review: checked schema backfill/ownership, authorization and ancestor visibility, strict input, lock order and concurrent moves/deletion, deferred position uniqueness, DTO boundaries, page totals, documentation and diff whitespace. No credentials or runtime artifacts included.
+- Remaining steps or blockers: Push, PR, CI and Codex review pending; merge/deployment are not yet requested or complete.

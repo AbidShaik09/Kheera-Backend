@@ -49,6 +49,13 @@ GitHub Actions self-hosted runners
 - JWT subject is the user email. Authorization must resolve it to server-side
   membership/role data rather than trust browser-provided ownership IDs.
 - A scheduled email worker processes queued email and retry state.
+- Issue #45 adds WorkflowStageController -> WorkflowStageService -> repositories
+  for stage configuration, paginated stage-filtered/grouped board reads and moves.
+  DTO mapping happens in service transactions. Mutations acquire the space lock
+  before the project lock and then reread items/stages, coordinating with membership
+  revocation and soft deletion. Repeatable-read board queries keep page/count/group
+  data consistent. Flyway V26 provisions project stages and enforces project-scoped
+  task references; #68/#69 consume this persistence contract.
 
 ### Data and Authentication Flow
 

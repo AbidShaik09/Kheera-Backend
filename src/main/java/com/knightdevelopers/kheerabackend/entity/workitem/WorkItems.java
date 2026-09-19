@@ -2,6 +2,7 @@ package com.knightdevelopers.kheerabackend.entity.workitem;
 
 import com.knightdevelopers.kheerabackend.entity.base.BaseEntity;
 import com.knightdevelopers.kheerabackend.entity.project.Projects;
+import com.knightdevelopers.kheerabackend.entity.project.ProjectWorkflows;
 import com.knightdevelopers.kheerabackend.entity.space.SpaceMembers;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,6 +30,19 @@ public class WorkItems extends BaseEntity {
     @JoinColumn(name = "project_id",nullable = false)
     @Setter(AccessLevel.NONE)
     private Projects project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workflow_id", nullable = false)
+    @Setter(AccessLevel.NONE)
+    private ProjectWorkflows workflow;
+    private int position;
+
+    public void moveToWorkflow(ProjectWorkflows workflow, int position) {
+        if (workflow == null || project == null || !workflow.getProject().getId().equals(project.getId()))
+            throw new IllegalArgumentException("workflow does not belong to project");
+        this.workflow = workflow;
+        this.position = position;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_item_id")

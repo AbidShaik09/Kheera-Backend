@@ -52,6 +52,14 @@ on the deployment runner as well as the local machine. Tracked by #71.
 
 ## Purpose
 
+Issue #45 board coverage lives in WorkflowBoardIntegrationTest (real JWT/MockMvc,
+PostgreSQL constraints, stage CRUD, paginated/grouped reads, concurrent moves and
+move/delete races), WorkflowMigrationIntegrationTest (V25 fixtures upgraded to
+V26 in an isolated schema), and WorkflowStageServiceTest (permission boundaries
+and lock ordering). Run these with Docker, then the required full clean verify.
+The migration test must append currentSchema with the correct URL separator:
+Testcontainers JDBC URLs can already include query parameters.
+
 This guide defines the ideal automated-test approach for the current Kheera
 Spring Boot backend. It is intentionally based on the code that exists today:
 authentication, OTPs, users, spaces, email processing, JPA repositories, the

@@ -149,7 +149,7 @@ It is currently a logical model, not an exact physical model of the backend.
 | `Project_Urls.name` | Physical column is `display_name` | Rename it. |
 | `Project_Workflows.name` | Physical column is `workflow_name` | Rename it. |
 | `Sprints.status_id varchar` | `sprint_status_id UUID -> project_sprint_status.id` | Rename, change type to UUID, and retain the FK. |
-| `Work_Items.workflow_id` | No migration or JPA mapping exists | Remove it from the diagram, or add the missing migration/entity relationship to the backend. |
+| `Work_Items.workflow_id` | V26 adds the project-scoped stage FK and JPA mapping | Keep the diagram aligned with ordered stages and explicit completion. |
 | Comment `space_member_id` required | SQL and JPA permit it to be null | Make it nullable in the diagram, or tighten the backend deliberately. |
 | Attachment URL length 255 | SQL uses `VARCHAR(2048)` | Update both attachment tables to `VARCHAR(2048)`. |
 | Missing unique constraints | SQL enforces member and role-permission uniqueness | Annotate unique `(user_id, space_id)` and `(space_role_id, space_permission_id)`. |
@@ -174,12 +174,31 @@ The reviewed dbdiagram.io model remains a logical design aid. The Flyway
 migration set and this document are the physical schema reference until a
 versioned diagram artifact is added to the repository.
 
-### Workflow relationship is designed but unimplemented
+### Ordered board stages (issue #45, V26)
 
-The diagram indicates `work_items.workflow_id -> project_workflows.id`, but the
-backend table and entity do not include it. This is a meaningful product choice:
-the project can define workflows, but a work item cannot currently be assigned
-to one. Implement it only if workflows are intended to drive work-item state.
+`project_workflows` is the stage table: position, name/icon and is_complete.
+`work_items(workflow_id,project_id)` references the stage's `(id,project_id)`
+through a composite FK. Every item has a non-null stage and nonnegative position.
+Deferred unique constraints on generated active_position columns enforce unique
+positions among active records, while permitting atomic swaps and retained
+soft-deleted history. An index supports project/stage board reads.
+
+The migration preserves custom stages, normalizes null names, orders them by
+createdAt/UUID and assigns existing items to the first active stage. Custom
+completion is initially false. Projects with no active stages get the six
+standard columns; Done alone is explicitly complete. An AFTER INSERT project
+trigger provisions those columns for future project creation, including SQL
+fixtures, without depending on the future project API.
+
+A work-item trigger supplies an omitted stage/position for legacy SQL inserts,
+checks active stage ownership and takes a shared stage lock. A stage trigger
+rejects soft deletion while active tasks remain. API writers serialize space
+then project; future task mutation services must use that same ordering, assign
+positions explicitly and compact after deletion. Trigger defaults are a fallback,
+not a replacement for the application transaction protocol.
+
+V26 is transactional. Back up before deployment; forward-fix with a new Flyway
+migration if needed. Do not remove populated relationships to roll back code.
 
 ## Design Strengths
 
@@ -198,8 +217,7 @@ to one. Implement it only if workflows are intended to drive work-item state.
 2. Correct the OTP table entity mapping before relying on it in fresh or
    validated deployments.
 3. Resolve the two nullability differences between migrations and JPA.
-4. Decide whether a work item needs a workflow foreign key; update both the
-   migration and JPA entity together if yes.
+4. Consume the V26 workflow relationship and explicit completion flag in #68/#69.
 5. Add indexes for frequently queried foreign keys and soft-delete filters after
    measuring application queries. PostgreSQL does not automatically create
    indexes for every foreign key.
