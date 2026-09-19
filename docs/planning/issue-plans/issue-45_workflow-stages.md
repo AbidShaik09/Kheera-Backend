@@ -42,7 +42,7 @@
 - [x] Update API, schema, architecture, progress, README, testing and TODO docs. Release history remains pending merge under documentation policy.
 - [x] Start locally; verify health, affected API success/failure/auth, and OpenAPI.
 - [x] Run `docker info` and `./mvnw.cmd clean verify`; 107 tests, zero failures/errors/skips.
-- [ ] Self-review, commit/push issue branch, create PR to `develop`, and request Codex review.
+- [x] Self-review, commit/push issue branch, create PR to `develop`, and request Codex review.
 - [ ] Inspect CI/reviews, fix valid findings, and follow the repository issue-closure policy.
 
 ## Validation evidence
@@ -65,10 +65,10 @@
 
 ## Delivery
 
-- PR URL: Pending.
-- Initial Codex request URL: Pending.
+- PR URL: https://github.com/AbidShaik09/Kheera-Backend/pull/80
+- Initial Codex request URL: https://github.com/AbidShaik09/Kheera-Backend/pull/80#issuecomment-5740691558
 - Follow-up review URLs and findings: Pending.
 - CI results: Pending.
 - Merge/deployment status and evidence: Pending.
 - Self-review: checked schema backfill/ownership, authorization and ancestor visibility, strict input, lock order and concurrent moves/deletion, deferred position uniqueness, DTO boundaries, page totals, documentation and diff whitespace. No credentials or runtime artifacts included.
-- Remaining steps or blockers: Push, PR, CI and Codex review pending; merge/deployment are not yet requested or complete.
+- Remaining steps or blockers: CI and Codex review pending; merge/deployment are not requested or complete. Automatic approval review rejected closing #45 before merge as premature and without explicit authorization, so the issue remains open. PR creation is complete.
