@@ -728,3 +728,14 @@ validation, inactive/foreign access, retained descendants, semantic completion,
 parent items, literal search, UUID tie-breaking, bounded statement counts and
 OpenAPI. Run these with WorkflowBoardIntegrationTest, then full clean verify and
 separate local startup/health/HTTP smoke. No migration is added by this slice.
+
+For Python-based PR tooling on Windows, set `PYTHONUTF8=1` (or use `python -X utf8`)
+when reading GitHub JSON through subprocesses. Review text can contain Unicode that
+fails the host cp1252 decoder; retry with UTF-8 before treating a watcher timeout
+as missing CI/review evidence.
+
+Before a local HTTP smoke run, confirm the newly started process reports successful
+startup and owns the selected test port. A healthy response from an older process
+does not validate current code. Spring Boot may put its classpath in a Java argfile;
+identify the task-owned process using startup PID and listening port before cleanup,
+then verify it exited. Never stop unrelated listeners to reuse a port.

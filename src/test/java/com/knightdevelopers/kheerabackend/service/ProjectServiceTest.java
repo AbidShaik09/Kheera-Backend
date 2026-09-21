@@ -27,12 +27,20 @@ class ProjectServiceTest {
         when(projects.lockActiveById(project)).thenReturn(Optional.of(entity));
         service.delete("user",project);
         var order=inOrder(access,projects);
+        order.verify(access).requireActiveUser("user");
         order.verify(projects).findActiveSpaceId(project);
         order.verify(access).requireSpace("user",space,SpaceAccessService.DELETE,true);
         order.verify(projects).lockActiveById(project);
         assertThat(entity.isDeleted()).isTrue();
         verify(projects,never()).delete(any());
         verifyNoInteractions(items);
+    }
+    @Test void inactiveAccountsCannotDiscoverProjectExistence() {
+        doThrow(SpaceApiException.unauthorized()).when(access).requireActiveUser("inactive");
+        assertThatThrownBy(()->service.detail("inactive",project)).isInstanceOf(SpaceApiException.class);
+        assertThatThrownBy(()->service.update("inactive",project,new ProjectWriteRequest())).isInstanceOf(SpaceApiException.class);
+        assertThatThrownBy(()->service.delete("inactive",project)).isInstanceOf(SpaceApiException.class);
+        verifyNoInteractions(projects,items);
     }
     @Test void deniedMutationCannotLockOrWriteProject() throws Exception {
         when(projects.findActiveSpaceId(project)).thenReturn(Optional.of(space));

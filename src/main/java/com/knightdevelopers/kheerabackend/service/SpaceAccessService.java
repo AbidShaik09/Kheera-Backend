@@ -31,11 +31,14 @@ public class SpaceAccessService {
     }
     // Descendant services must call this inside their transaction before touching data.
     public Spaces requireSpace(String email, UUID spaceId, String permission, boolean lock) {
-        users.findActiveByEmail(email).orElseThrow(SpaceApiException::unauthorized);
+        requireActiveUser(email);
         if (lock) spaces.lockActiveById(spaceId).orElseThrow(SpaceApiException::notFound);
         var member = members.findActiveMembership(email, spaceId).orElseThrow(SpaceApiException::notFound);
         if (permission != null && !permissions(email, spaceId).contains(permission)) throw SpaceApiException.forbidden();
         return member.getSpace();
+    }
+    public void requireActiveUser(String email) {
+        users.findActiveByEmail(email).orElseThrow(SpaceApiException::unauthorized);
     }
     public Set<String> permissions(String email, UUID spaceId) { return members.findActivePermissions(email, spaceId); }
 }

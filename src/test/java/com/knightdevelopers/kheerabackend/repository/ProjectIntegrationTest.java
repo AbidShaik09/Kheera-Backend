@@ -89,7 +89,12 @@ class ProjectIntegrationTest extends PostgreSqlIntegrationTest {
             jdbc.update("update "+table+" set is_deleted=false");
         }
         jdbc.update("update users set is_deleted=true");
-        mvc.perform(get(path(project)).header("Authorization",token())).andExpect(status().isUnauthorized());
+        for(UUID candidate: new UUID[]{project,UUID.randomUUID()}) {
+            mvc.perform(get(path(candidate)).header("Authorization",token())).andExpect(status().isUnauthorized());
+            mvc.perform(patch(path(candidate)).header("Authorization",token()).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                    .andExpect(status().isUnauthorized());
+            mvc.perform(delete(path(candidate)).header("Authorization",token())).andExpect(status().isUnauthorized());
+        }
     }
     @Test void validationAndPatchSemantics() throws Exception {
         UUID space=space(), project=seed(space,"Original");

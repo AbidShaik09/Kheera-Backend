@@ -616,3 +616,6 @@ Project deletion retains stored descendants but makes all existing board, stage 
 work-item move/read paths inaccessible. Mutations lock the space before the project,
 coordinating with membership changes, space deletion and board writes. V26 provisions
 the default six-stage board transactionally when the project is created.
+
+Project detail/PATCH/DELETE verify account activity before resolving ownership,
+so inactive accounts receive 401 for both existing and unknown project IDs.

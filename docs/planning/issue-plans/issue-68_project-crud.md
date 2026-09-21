@@ -92,3 +92,24 @@ change. Existing recovery/permission rules cover this friction; no new rule need
   the repository's default close-after-PR rule. No closure occurred.
 - Blocker/rule review: existing Docker and permission recovery rules suffice.
   The issue-closure exception is specific to this delivery, not a global rule change.
+
+## PR review follow-up
+- Thread PRRT_kwDOSlIgFM6kOrC- / discussion_r4059138933: real. Active-account
+  validation must precede project-parent lookup for GET/PATCH/DELETE to avoid
+  different 401/404 results exposing existence to inactive accounts.
+- Add HTTP regression for inactive JWTs with existing and unknown project IDs;
+  expose SpaceAccessService.requireActiveUser and call it before ownership lookup.
+- Repeat targeted regression, local startup/smoke including inactive unknown ID,
+  and full clean verify before pushing. Prior validation does not cover this fix.
+- Windows watcher encountered a cp1252 decoding error reading Unicode GitHub
+  review text. Run with PYTHONUTF8=1; the UTF-8 retry returned the actionable thread.
+- Regression reproduced before fix: unknown project returned 404 instead of 401
+  for an inactive account. After fix, 22 targeted project/service/board tests passed.
+- Fresh local startup and full smoke passed, including GET/PATCH/DELETE returning
+  401 for inactive accounts with unknown/deleted project IDs.
+- An earlier smoke retry reached the original server after the replacement failed
+  on an occupied port. That attempt is invalid evidence. Confirmed startup PID and
+  listener ownership, stopped only the task-owned server, restarted current code,
+  and repeated successfully. Testing strategy now records this verification rule.
+- Final review-fix clean verify passed 117 tests, zero failures/errors/skips on
+  2026-09-21. This supersedes the 116-test pre-review evidence for current code.

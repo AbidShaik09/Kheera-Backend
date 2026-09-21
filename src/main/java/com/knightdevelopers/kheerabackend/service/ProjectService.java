@@ -62,6 +62,7 @@ public class ProjectService {
         project.setUpdatedAt(Instant.now());
     }
     private void authorize(String email,UUID id,String permission,boolean lock) {
+        access.requireActiveUser(email);
         UUID spaceId=projects.findActiveSpaceId(id).orElseThrow(SpaceApiException::resourceNotFound);
         access.requireSpace(email,spaceId,permission,lock);
     }
