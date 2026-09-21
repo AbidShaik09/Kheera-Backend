@@ -51,8 +51,9 @@
 - [x] Start with mvnw.cmd spring-boot:run using disposable local PostgreSQL; check
       health, create/list/read/patch/delete, 400/401/403/404 and raw OpenAPI.
 - [x] Run docker info and mvnw.cmd clean verify; require zero skips/failures/errors.
-- [ ] Commit/push feature branch and create PR to develop with validation evidence.
-- [ ] Request @codex review, record accepted comment URL; close issue per repo policy.
+- [x] Commit/push feature branch and create PR to develop with validation evidence.
+- [x] Request @codex review and record accepted comment URL.
+- [ ] Keep issue #68 open until merge, per explicit owner instruction on 2026-09-21.
 - [ ] Inspect CI/reviews; fix findings and repeat affected/full validation.
 - [ ] Review blockers/rules; merge/deployment only with applicable authorization.
 
@@ -82,4 +83,12 @@ for the sandbox-created worktree; use a command-scoped override, not a broad tru
 change. Existing recovery/permission rules cover this friction; no new rule needed.
 
 ## Delivery
-PR, review, CI, merge and deployment pending.
+- PR: https://github.com/AbidShaik09/Kheera-Backend/pull/81 (base develop).
+- Initial review request accepted: https://github.com/AbidShaik09/Kheera-Backend/pull/81#issuecomment-5755118525
+- Implementation commit: d6bb46b; initial plan commit: cb60acd.
+- Local verification complete; CI/review in progress. Merge/deployment pending.
+- Automatic approval review rejected issue closure as an additional external
+  mutation. Owner explicitly directed keeping #68 open until merge; this overrides
+  the repository's default close-after-PR rule. No closure occurred.
+- Blocker/rule review: existing Docker and permission recovery rules suffice.
+  The issue-closure exception is specific to this delivery, not a global rule change.
