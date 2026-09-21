@@ -49,7 +49,8 @@ Use the linked acceptance criteria and the canonical
    fixtures without depending on the project HTTP API.
 4. [ ] [#68 Space-scoped project CRUD and summaries](https://github.com/AbidShaik09/Kheera-Backend/issues/68).
    Child slice of #10; depends on #66/#67 and #45 completion semantics.
-   Blocked until #45 is delivered, per owner instruction on 2026-09-13.
+   Prerequisites #66/#67/#45 verified merged (PRs #74/#78/#80). In progress on
+   `issue/68_project-crud`; see [execution plan](issue-plans/issue-68_project-crud.md).
 5. [ ] [#69 Work-item CRUD, hierarchy, and board reads](https://github.com/AbidShaik09/Kheera-Backend/issues/69).
    Child slice of #11; depends on #68, membership authorization, and #45.
    Preserve completed #44 mapping decisions; new relationships need new migrations.
