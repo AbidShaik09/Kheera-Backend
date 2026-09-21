@@ -350,3 +350,10 @@ Issue #67 adds active-member management and paginated roles/permissions under
 `/api/spaces/{spaceId}`. See the [membership contract](docs/workspace/api/API_CONTRACT.md#issue-67-membership-contract-implemented-on-issue-branch)
 for permissions, last-administrator protection, request bodies and rejoin behavior.
 It adds existing active users only; invitations and custom role editing are future work.
+
+## Project API
+
+Space-scoped project CRUD and real summary metrics are implemented by issue #68.
+See [API contract](docs/workspace/api/API_CONTRACT.md#project-crud-and-summaries-68)
+and [implementation plan](docs/planning/issue-plans/issue-68_project-crud.md) for
+permissions, pagination, metric semantics and verification evidence.

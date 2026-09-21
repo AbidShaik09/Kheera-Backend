@@ -290,3 +290,16 @@ and preserve the administrator invariant. These APIs are outside #67; direct SQL
 administration can violate application invariants and must be reviewed accordingly.
 Tests cover V24-to-V25 data migration, revoked grants, concurrent add/rejoin and
 administrator changes, filtering, permission escalation and retained assignments.
+
+## Project summary persistence (#68)
+
+No schema or entity mapping change: V10 metadata and V26 stage semantics suffice.
+ProjectService reads a bounded metadata page and a single grouped work-item query
+for its IDs, with an optional count query. It does not fetch project collections.
+Repeatable-read snapshots keep counts and metrics coherent. Metrics count each
+active item (including parents/epics), filter deleted stages/ancestors, and use the
+stage is_complete flag. See the API contract for denominator and rounding rules.
+Project writes take the active space lock, then the project lock for update/delete;
+this shares the board/membership lock order. Soft deletion retains all children,
+while existing descendant authorization rejects the deleted project. No migration
+or backfill is needed; no existing null sprint-cycle values are rewritten.
