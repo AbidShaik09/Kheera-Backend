@@ -128,4 +128,15 @@ authority. The API adds existing users only and has no SMTP/invitation dependenc
 Soft-deleted memberships retain task/comment references. Descendant services must
 call SpaceAccessService in their transaction; a historical assignment never grants
 access. See API_CONTRACT.md for the pagination, administrator and rejoin contract.
-Project #68 is blocked on #45; this change introduces no project/workflow endpoint.
+Project #68 consumes the merged #45 workflow completion semantics.
+
+## Project API boundary (#68)
+
+ProjectController returns ProjectSummaryDto/PageDto and accepts strict metadata
+requests. ProjectService owns transactions and delegates JWT-email/space authority
+to SpaceAccessService. Reads require membership; create/update use space.update and
+delete uses space.delete. Space then project locking coordinates all current
+mutation paths. ProjectsRepository handles scoped metadata pages; WorkItemsRepository
+computes completion aggregates once per page. No controller accesses persistence,
+no project collection traversal occurs, and deleted ancestors block descendants.
+See API_CONTRACT.md for precise search, paging, metrics and PATCH semantics.

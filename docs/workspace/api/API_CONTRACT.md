@@ -256,11 +256,11 @@ Suggested create/update payload:
 
 | Method and path | Status | Purpose |
 | --- | --- | --- |
-| `GET /api/spaces/{spaceId}/projects` | Required | Project cards in Space Details. |
-| `POST /api/spaces/{spaceId}/projects` | Required | Create project. |
-| `GET /api/projects/{projectId}` | Required | Project Details header and overview. |
-| `PATCH /api/projects/{projectId}` | Required | Edit project name, description, sprint-cycle days. |
-| `DELETE /api/projects/{projectId}` | Required | Soft-delete project. |
+| `GET /api/spaces/{spaceId}/projects` | Implemented (#68 branch) | Project cards in Space Details. |
+| `POST /api/spaces/{spaceId}/projects` | Implemented (#68 branch) | Create project. |
+| `GET /api/projects/{projectId}` | Implemented (#68 branch) | Project Details header and overview. |
+| `PATCH /api/projects/{projectId}` | Implemented (#68 branch) | Edit project name, description, sprint-cycle days. |
+| `DELETE /api/projects/{projectId}` | Implemented (#68 branch) | Soft-delete project. |
 | `GET /api/projects/{projectId}/urls` | Required | Project links. |
 | `POST /api/projects/{projectId}/urls` | Required | Add project link. |
 | `PATCH /api/projects/{projectId}/urls/{urlId}` | Required | Edit project link. |
@@ -511,7 +511,7 @@ Existing spaces receive no implicit role grants or backfill in this issue.
 All future descendant services must call `SpaceAccessService.requireSpace` in
 their transaction before accessing a project/task, resolving its actual parent
 space from the database. For mutations, acquire the active-space write lock before
-loading descendants. #68/#69 implement those HTTP APIs; they do not exist yet.
+loading descendants. #68 implements project CRUD; #69 supplies remaining work-item CRUD.
 
 PATCH is included in the CORS method allow-list. Configured frontend origins may preflight authenticated metadata updates; untrusted origins remain rejected.
 
@@ -574,5 +574,45 @@ V25 adds the four action permissions to existing active spaces and grants them t
 active roles with space.members.manage. It does not revive deleted grants. New
 space bootstrap creates Administrator with all seven catalogue grants and Member
 with read only. Member provides a safe role for selectors; custom role editing and
-invitations remain future work. Existing spaces retain their roles. Project #68
-remains blocked pending #45 completion semantics, as requested by the owner.
+invitations remain future work. Existing spaces retain their roles. Project #68 now consumes the merged #45 completion semantics.
+
+## Project CRUD and summaries (#68)
+
+Implemented on `issue/68_project-crud`; PR review/merge pending. ProjectSummary is
+returned by create/read/update and in the standard project-list page envelope.
+POST returns 201 with Location; reads/PATCH return 200; DELETE returns 204.
+Active JWT-email account, space, membership and same-space role are required.
+Reading requires membership; create/PATCH require `space.update`; delete requires
+`space.delete`. No new implicit role grants are introduced. Missing/deleted/foreign
+resources return 404, missing/inactive authentication 401, insufficient grants 403,
+and invalid input 400 using `{code,message,fieldErrors}`. Legacy auth text and
+GET spaces array responses remain unchanged.
+
+Create/PATCH accept only `name`, `description`, `sprintCycleDays`. Name is trimmed,
+nonblank, at most 255 Unicode characters and required for create. Description is
+at most 500 characters; explicit null clears it. Sprint cycle must be a positive
+32-bit integer and defaults to 7 on create; null is invalid when supplied. Legacy
+null cycles remain readable. PATCH omission preserves values, empty PATCH preserves
+timestamps, and ownership/audit/spaceId fields are rejected. No reparenting is allowed.
+
+List defaults: page=0, size=25, sort=name,asc, q empty. Page range 0..100000, size
+1..100, q at most 100 Unicode characters. Search is a trimmed case-insensitive
+literal substring of name or description; `%` and `_` are literal. Sort accepts
+name, createdAt, updatedAt with asc/desc; UUID ascending always breaks ties.
+Totals exclude deleted projects/spaces. Metadata page, optional count and one
+aggregate query supply results without per-project child loads. Reads use a
+repeatable-read snapshot for authorization, metadata, totals and aggregates.
+
+Metric denominator: every active work-item row in an active stage of the project,
+including parents, epics and children once each. This is item completion, not effort
+or leaf-only completion. Type/assignee deletion does not delete the item; neither
+relationship changes the denominator. Completion uses only the stage `is_complete`
+flag from #45, never its name or actualEndDate. Deleted items/stages/projects/spaces
+are excluded. progressPercent is 100 * completed / total rounded to nearest integer
+(half up); no items means 0. openTaskCount is total minus completed. Stage changes
+are reflected on the next read. updatedAt describes project metadata, not task activity.
+
+Project deletion retains stored descendants but makes all existing board, stage and
+work-item move/read paths inaccessible. Mutations lock the space before the project,
+coordinating with membership changes, space deletion and board writes. V26 provisions
+the default six-stage board transactionally when the project is created.

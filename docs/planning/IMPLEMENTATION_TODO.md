@@ -38,11 +38,11 @@ Use the linked acceptance criteria and the canonical
    Create/read/update/soft-delete spaces, bootstrap creator permissions atomically,
    and preserve the existing space-list response. Replaces historical #9.
    PR #74 is verified merged; see [plan and validation](issue-66_space-lifecycle.md).
-2. [ ] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
+2. [x] [#67 Membership management and administrator safeguards](https://github.com/AbidShaik09/Kheera-Backend/issues/67).
    Depends on #66; supplies membership management, role/permission reads and
-   last-administrator protection. In progress on `issue/67_membership-management`;
+   last-administrator protection. Verified merged in PR #78;
    see [execution plan](issue-plans/issue-67_membership-management.md).
-3. [ ] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45) — implemented in [PR #80](https://github.com/AbidShaik09/Kheera-Backend/pull/80), awaiting CI/review. Local clean verify passed 107 tests with zero skips. The existing `project_workflows` table is the ordered board-stage table and owns explicit completion semantics.
+3. [x] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45) — implemented in [PR #80](https://github.com/AbidShaik09/Kheera-Backend/pull/80), verified merged on 2026-09-21. Local clean verify passed 107 tests with zero skips. The existing `project_workflows` table is the ordered board-stage table and owns explicit completion semantics.
    Decide and migrate ordered stages, completion semantics, and task-stage
    relationships before dependent board APIs. Owns the move/position endpoint.
    Coordinate with #66/#67 authorization; stage design can use seeded project
@@ -50,7 +50,7 @@ Use the linked acceptance criteria and the canonical
 4. [ ] [#68 Space-scoped project CRUD and summaries](https://github.com/AbidShaik09/Kheera-Backend/issues/68).
    Child slice of #10; depends on #66/#67 and #45 completion semantics.
    Prerequisites #66/#67/#45 verified merged (PRs #74/#78/#80). In progress on
-   `issue/68_project-crud`; see [execution plan](issue-plans/issue-68_project-crud.md).
+   `issue/68_project-crud` (116 tests and local HTTP smoke passed); see [execution plan](issue-plans/issue-68_project-crud.md).
 5. [ ] [#69 Work-item CRUD, hierarchy, and board reads](https://github.com/AbidShaik09/Kheera-Backend/issues/69).
    Child slice of #11; depends on #68, membership authorization, and #45.
    Preserve completed #44 mapping decisions; new relationships need new migrations.

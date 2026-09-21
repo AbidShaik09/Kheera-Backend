@@ -719,3 +719,12 @@ When adding a repository dependency, update the existing database-free
 KheeraBackendApplicationTests repository mocks as well as real PostgreSQL tests.
 A new repository bean cannot be discovered in that intentionally isolated context.
 Keep the full-context PostgreSQL journeys to verify actual wiring and queries.
+
+## Project verification (#68)
+
+ProjectServiceTest verifies access-before-data and mutation lock order/soft deletion.
+ProjectIntegrationTest exercises real JWT/MockMvc plus Flyway PostgreSQL CRUD,
+validation, inactive/foreign access, retained descendants, semantic completion,
+parent items, literal search, UUID tie-breaking, bounded statement counts and
+OpenAPI. Run these with WorkflowBoardIntegrationTest, then full clean verify and
+separate local startup/health/HTTP smoke. No migration is added by this slice.

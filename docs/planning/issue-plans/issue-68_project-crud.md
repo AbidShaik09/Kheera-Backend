@@ -42,24 +42,44 @@
 ## Ordered execution checklist
 - [x] Confirm requirements/dependencies and clean fetched develop baseline.
 - [x] Create branch and TODO entry; write initial plan.
-- [ ] Commit initial plan before application tests/code.
-- [ ] Add and run failing PostgreSQL HTTP tests (expected missing-route 404).
-- [ ] Add service tests before service implementation; implement repository queries,
+- [x] Commit initial plan before application tests/code.
+- [x] Add and run failing PostgreSQL HTTP tests (expected missing-route 404).
+- [x] Add service tests before service implementation; implement repository queries,
       DTOs, service and controller; extend JSON error advice.
-- [ ] Run targeted ProjectIntegrationTest, ProjectServiceTest and board regressions.
-- [ ] Update affected documentation and self-review acceptance/security/concurrency.
-- [ ] Start with mvnw.cmd spring-boot:run using disposable local PostgreSQL; check
+- [x] Run targeted ProjectIntegrationTest, ProjectServiceTest and board regressions.
+- [x] Update affected documentation and self-review acceptance/security/concurrency.
+- [x] Start with mvnw.cmd spring-boot:run using disposable local PostgreSQL; check
       health, create/list/read/patch/delete, 400/401/403/404 and raw OpenAPI.
-- [ ] Run docker info and mvnw.cmd clean verify; require zero skips/failures/errors.
+- [x] Run docker info and mvnw.cmd clean verify; require zero skips/failures/errors.
 - [ ] Commit/push feature branch and create PR to develop with validation evidence.
 - [ ] Request @codex review, record accepted comment URL; close issue per repo policy.
 - [ ] Inspect CI/reviews; fix findings and repeat affected/full validation.
 - [ ] Review blockers/rules; merge/deployment only with applicable authorization.
 
 ## Validation evidence
-Pending. Targeted: `.\mvnw.cmd -Dtest=ProjectIntegrationTest,ProjectServiceTest,WorkflowBoardIntegrationTest test`.
+2026-09-21, final implementation working tree: targeted command: `.\mvnw.cmd -Dtest=ProjectIntegrationTest,ProjectServiceTest,WorkflowBoardIntegrationTest test`.
 Full gate: `docker info`, `.\mvnw.cmd clean verify`. Local startup and HTTP smoke
 are separate gates; no skips or substitute databases.
+
+- Initial PostgreSQL HTTP red run: 1 test, expected 201 but received missing-route
+  404, zero setup errors/skips (`issue68-red.log`, workspace parent).
+- Targeted project/service/board: 21 tests passed, zero failures/errors/skips.
+- Final clean verify: 116 tests passed, zero failures/errors/skips; Docker 29.7.2,
+  Java 21.0.12.1, PostgreSQL 16 Testcontainers, all 26 Flyway migrations applied.
+- Local spring-boot:run on 18068 against disposable PostgreSQL 15468: startup,
+  health before/after, CRUD statuses, 0/100 percent metrics after a board move,
+  validation 400, missing auth 401, forbidden update 403, unknown/deleted project
+  404, descendant board 404, and OpenAPI 201/204/error responses passed.
+- Self-review: authorization precedes metadata/count access; immutable space parent;
+  locks match board/membership order; bounded queries and stable sorting tested;
+  soft-delete retains children; strict fields prevent audit/ownership writes.
+- Existing local TODO edit remains untouched. No production configuration or secrets.
+
+## Plan changes and recovery notes
+No scope changes. The host Docker installation is accessible with escalated runtime
+permissions. Git operations as the host require an exact safe.directory override
+for the sandbox-created worktree; use a command-scoped override, not a broad trust
+change. Existing recovery/permission rules cover this friction; no new rule needed.
 
 ## Delivery
 PR, review, CI, merge and deployment pending.

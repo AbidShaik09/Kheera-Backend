@@ -7,6 +7,17 @@ import org.springframework.data.domain.*;
 import java.util.*;
 
 public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
+    interface ProjectMetrics {
+        UUID getProjectId();
+        long getTotal();
+        long getComplete();
+    }
+    @Query("select w.project.id as projectId, count(w) as total, " +
+           "sum(case when w.workflow.isComplete=true then 1 else 0 end) as complete " +
+           "from WorkItems w where w.project.id in :ids and w.isDeleted=false and w.workflow.isDeleted=false " +
+           "and w.project.isDeleted=false and w.project.space.isDeleted=false group by w.project.id")
+    List<ProjectMetrics> summarizeProjects(@Param("ids") Collection<UUID> ids);
+
     @Query("select w.project.id from WorkItems w where w.id=:id and w.isDeleted=false and w.project.isDeleted=false and w.project.space.isDeleted=false")
     Optional<UUID> findActiveProjectId(@Param("id") UUID id);
 
