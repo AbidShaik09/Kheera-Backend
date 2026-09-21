@@ -287,23 +287,40 @@ The draft project board displays columns such as Backlog, To Do, In Progress,
 In Review, Done, and Blocked. The API and data model must have a concrete field
 representing a work item's current board column.
 
-The current ER draft suggests `work_items.workflow_id`, but that column is not
-implemented in Flyway or JPA. Treat the following as a **design decision**:
+Issue #45 uses `project_workflows` as the ordered board-column table. V26 adds
+`work_items.workflow_id`, project-scoped referential integrity, and zero-based
+positions. Project insertion provisions Backlog, To Do, In Progress, In Review,
+Done and Blocked. Existing custom stages retain their IDs and are ordered by
+createdAt then UUID; projects without active stages receive the six defaults.
+Existing tasks enter the first active stage, ordered by createdAt then UUID.
 
-- Option A: use `project_workflows` as the board-column table and add
-  `work_items.workflow_id` as a UUID foreign key.
-- Option B: introduce a dedicated `project_workflow_stages` / `work_item_status`
-  table and reference that from work items.
+Stage DTO: `{id,name,icon,position,complete}`. Completion is the explicit
+`is_complete` classification, never the display name or an actual end date.
+Only the provisioned Done stage starts complete; legacy custom stages default
+to false and must be classified explicitly. Renaming a stage preserves completion.
+Project metrics in #68 must consume this flag; changing it reclassifies all tasks
+in that stage.
 
-Option B is clearer if a workflow can contain multiple ordered stages. Choose
-one before building drag-and-drop board behavior.
+Reads require active account, membership, role and ancestors. Stage writes and
+moves require the existing `space.update` grant (no new implicit role grants).
+Unknown, deleted or foreign project/stage/item IDs return 404; a visible resource
+without the write grant returns 403. Errors follow the JSON contract, including 401.
+
+Create accepts `{name,icon?,position?,complete?}`; PATCH accepts the same optional
+fields. Name is trimmed and 1–100 characters; icon is at most 255 characters
+(empty string clears it); complete is boolean; position is a nonnegative integer.
+Omitted PATCH fields stay unchanged. Explicit null, unknown fields and scalar
+type coercions return 400. Maximum 100 active stages; exceeding it returns
+409 STAGE_LIMIT. Delete is soft: nonempty stages return 409 STAGE_NOT_EMPTY and
+the final active stage returns 409 LAST_STAGE. Historical deleted tasks retain
+their stage reference.
 
 | Method and path | Status | Purpose |
 | --- | --- | --- |
-| `GET /api/projects/{projectId}/workflow-stages` | Design decision | Ordered board columns. |
-| `POST /api/projects/{projectId}/workflow-stages` | Design decision | Create column. |
-| `PATCH /api/projects/{projectId}/workflow-stages/{stageId}` | Design decision | Rename/reorder column. |
-| `DELETE /api/projects/{projectId}/workflow-stages/{stageId}` | Design decision | Remove column after handling its work items. |
+| `GET /api/projects/{projectId}/workflow-stages` | Implemented | 200 ordered stage array. |
+| `POST /api/projects/{projectId}/workflow-stages` | Implemented | 201 created stage DTO. |
+| `PATCH /api/projects/{projectId}/workflow-stages/{stageId}` | Implemented | 200 updated stage DTO. |
+| `DELETE /api/projects/{projectId}/workflow-stages/{stageId}` | Implemented | 204; remove an empty non-final stage. |
 | `GET /api/projects/{projectId}/work-item-types` | Required | Type selector and epic/task grouping. |
 | `POST /api/projects/{projectId}/work-item-types` | Required | Create type. |
 | `PATCH /api/projects/{projectId}/work-item-types/{typeId}` | Required | Edit type name/icon. |
@@ -319,12 +336,31 @@ one before building drag-and-drop board behavior.
 
 | Method and path | Status | Purpose |
 | --- | --- | --- |
-| `GET /api/projects/{projectId}/work-items` | Required | Board/list/epic view. Support `stageId`, `typeId`, `sprintId`, `assigneeId`, `parentId`, `q`, and pagination filters. |
+| `GET /api/projects/{projectId}/work-items` | Implemented stage slice (#45) | Supports `stageId`, `groupBy=stage`, `page`, `size`. Additional filters/fields remain #69. |
 | `POST /api/projects/{projectId}/work-items` | Required | Create task, epic, or child work item. |
 | `GET /api/work-items/{workItemId}` | Required | Task Details screen. |
 | `PATCH /api/work-items/{workItemId}` | Required | Update title, description, dates, effort, parent, type, assignee, sprint, and board stage. |
 | `DELETE /api/work-items/{workItemId}` | Required | Soft-delete a work item. |
-| `POST /api/work-items/{workItemId}/move` | Required | Explicit drag-and-drop board move with optional ordering position. |
+| `POST /api/work-items/{workItemId}/move` | Implemented | 200 moved BoardWorkItem DTO; atomic stage/position change. |
+
+BoardWorkItem is `{id,projectId,title,stageId,stageName,complete,position}`.
+The GET response is `{items,page,size,totalItems,totalPages,groups}`; page defaults
+to 0, size to 25 (1–100). Sort is fixed: stage position, item position, UUID.
+With `groupBy=stage`, groups are ordered `{stage,items}` objects, including empty
+columns, and contain only items on the current page. Totals describe the full
+filtered result; grouping does not bypass pagination. Without grouping, groups
+is empty. Deleted items/stages are excluded. Other groupBy values return 400.
+The optional stageId must identify an active stage of the requested project.
+General CRUD, type/assignee/parent/text/sprint filters and full detail fields
+remain #69; clients must not rely on those filters in this revision.
+
+Move position is the zero-based destination index after removing the moving
+item. Omission appends and oversized values clamp to the end. Both affected
+columns become contiguous; same-column moves use the same rule. Successful
+requests serialize on space then project rows before rereading board data.
+Concurrent requests apply in lock-acquisition order; repeated moves to the same
+explicit position preserve order. There is no optimistic stale-board rejection.
+Future create/delete/reparent APIs must use the same locks and compact positions.
 
 ```json
 // CreateWorkItemRequest
@@ -402,8 +438,7 @@ though the Penpot drafts do not show them yet.
 
 1. Complete `GET/PATCH /api/users/me`, spaces, project CRUD, and the dashboard
    read model.
-2. Decide and migrate the work-item board-stage relationship before building
-   Project Details drag-and-drop.
+2. Consume the #45 stage/move contract when building Project Details drag-and-drop.
 3. Implement work-item CRUD, member assignment, comments, and attachment upload.
 4. Add search, activity, favourites, and notifications once their persistence
    models are agreed.
@@ -416,7 +451,7 @@ though the Penpot drafts do not show them yet.
   JSON. Do not silently mix response parsing strategies in the frontend.
 - OTP expiry is stored in the database but must be enforced by the verification
   service for the contract claim "expired OTP" to be true.
-- Project board columns shown in Penpot are not supported by the current schema.
+- Project board columns are supported by V26; general task CRUD remains #69.
 - Favourites and notifications shown in the UI have no storage model yet.
 - `GET /api/users` currently exposes all users to any authenticated caller;
   people search should be scoped to the current space.

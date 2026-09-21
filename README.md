@@ -238,6 +238,17 @@ src/main/java/com/knightdevelopers/kheerabackend
 
 # Git Workflow
 
+## Project board stages
+
+Issue #45 implements ordered project stages, stage-filtered/grouped paginated
+board reads and atomic work-item moves. See the
+[API contract](docs/workspace/api/API_CONTRACT.md#5-board-columns-work-item-types-and-sprints)
+for payloads, permissions and ordering, and the
+[execution plan](docs/planning/issue-plans/issue-45_workflow-stages.md)
+for migration and validation evidence. New projects receive six default stages;
+completion is an explicit stage property consumed by upcoming project metrics.
+
+
 ## Create Feature Branch
 
 ```bash

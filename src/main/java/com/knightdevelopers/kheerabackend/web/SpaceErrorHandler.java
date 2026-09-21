@@ -2,13 +2,14 @@ package com.knightdevelopers.kheerabackend.web;
 
 import com.knightdevelopers.kheerabackend.controller.SpaceLifecycleController;
 import com.knightdevelopers.kheerabackend.controller.MembershipController;
+import com.knightdevelopers.kheerabackend.controller.WorkflowStageController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {SpaceLifecycleController.class, MembershipController.class})
+@RestControllerAdvice(assignableTypes = {SpaceLifecycleController.class, MembershipController.class, WorkflowStageController.class})
 public class SpaceErrorHandler {
     public record ErrorBody(String code, String message, Map<String, String> fieldErrors) { }
     @ExceptionHandler(SpaceApiException.class)

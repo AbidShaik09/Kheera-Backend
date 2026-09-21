@@ -42,7 +42,7 @@ Use the linked acceptance criteria and the canonical
    Depends on #66; supplies membership management, role/permission reads and
    last-administrator protection. In progress on `issue/67_membership-management`;
    see [execution plan](issue-plans/issue-67_membership-management.md).
-3. [ ] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45).
+3. [ ] [#45 Workflow stages and board movement](https://github.com/AbidShaik09/Kheera-Backend/issues/45) — implemented in [PR #80](https://github.com/AbidShaik09/Kheera-Backend/pull/80), awaiting CI/review. Local clean verify passed 107 tests with zero skips. The existing `project_workflows` table is the ordered board-stage table and owns explicit completion semantics.
    Decide and migrate ordered stages, completion semantics, and task-stage
    relationships before dependent board APIs. Owns the move/position endpoint.
    Coordinate with #66/#67 authorization; stage design can use seeded project

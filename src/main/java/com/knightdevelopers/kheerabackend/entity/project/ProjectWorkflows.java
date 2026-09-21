@@ -13,13 +13,15 @@ import lombok.Setter;
 public class ProjectWorkflows extends BaseEntity {
     private  String workflowName;
     private String icon;
+    private int position;
+    private boolean isComplete;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false,name = "project_id")
     @Setter(AccessLevel.NONE)
     private  Projects project;
 
-    void assignProject(Projects project){
+    public void assignProject(Projects project){
         this.project = project;
     }
 }
