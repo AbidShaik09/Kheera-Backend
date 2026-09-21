@@ -52,6 +52,14 @@ on the deployment runner as well as the local machine. Tracked by #71.
 
 ## Purpose
 
+Issue #45 board coverage lives in WorkflowBoardIntegrationTest (real JWT/MockMvc,
+PostgreSQL constraints, stage CRUD, paginated/grouped reads, concurrent moves and
+move/delete races), WorkflowMigrationIntegrationTest (V25 fixtures upgraded to
+V26 in an isolated schema), and WorkflowStageServiceTest (permission boundaries
+and lock ordering). Run these with Docker, then the required full clean verify.
+The migration test must append currentSchema with the correct URL separator:
+Testcontainers JDBC URLs can already include query parameters.
+
 This guide defines the ideal automated-test approach for the current Kheera
 Spring Boot backend. It is intentionally based on the code that exists today:
 authentication, OTPs, users, spaces, email processing, JPA repositories, the
@@ -711,3 +719,23 @@ When adding a repository dependency, update the existing database-free
 KheeraBackendApplicationTests repository mocks as well as real PostgreSQL tests.
 A new repository bean cannot be discovered in that intentionally isolated context.
 Keep the full-context PostgreSQL journeys to verify actual wiring and queries.
+
+## Project verification (#68)
+
+ProjectServiceTest verifies access-before-data and mutation lock order/soft deletion.
+ProjectIntegrationTest exercises real JWT/MockMvc plus Flyway PostgreSQL CRUD,
+validation, inactive/foreign access, retained descendants, semantic completion,
+parent items, literal search, UUID tie-breaking, bounded statement counts and
+OpenAPI. Run these with WorkflowBoardIntegrationTest, then full clean verify and
+separate local startup/health/HTTP smoke. No migration is added by this slice.
+
+For Python-based PR tooling on Windows, set `PYTHONUTF8=1` (or use `python -X utf8`)
+when reading GitHub JSON through subprocesses. Review text can contain Unicode that
+fails the host cp1252 decoder; retry with UTF-8 before treating a watcher timeout
+as missing CI/review evidence.
+
+Before a local HTTP smoke run, confirm the newly started process reports successful
+startup and owns the selected test port. A healthy response from an older process
+does not validate current code. Spring Boot may put its classpath in a Java argfile;
+identify the task-owned process using startup PID and listening port before cleanup,
+then verify it exited. Never stop unrelated listeners to reuse a port.

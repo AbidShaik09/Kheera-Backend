@@ -49,6 +49,13 @@ GitHub Actions self-hosted runners
 - JWT subject is the user email. Authorization must resolve it to server-side
   membership/role data rather than trust browser-provided ownership IDs.
 - A scheduled email worker processes queued email and retry state.
+- Issue #45 adds WorkflowStageController -> WorkflowStageService -> repositories
+  for stage configuration, paginated stage-filtered/grouped board reads and moves.
+  DTO mapping happens in service transactions. Mutations acquire the space lock
+  before the project lock and then reread items/stages, coordinating with membership
+  revocation and soft deletion. Repeatable-read board queries keep page/count/group
+  data consistent. Flyway V26 provisions project stages and enforces project-scoped
+  task references; #68/#69 consume this persistence contract.
 
 ### Data and Authentication Flow
 
@@ -121,4 +128,15 @@ authority. The API adds existing users only and has no SMTP/invitation dependenc
 Soft-deleted memberships retain task/comment references. Descendant services must
 call SpaceAccessService in their transaction; a historical assignment never grants
 access. See API_CONTRACT.md for the pagination, administrator and rejoin contract.
-Project #68 is blocked on #45; this change introduces no project/workflow endpoint.
+Project #68 consumes the merged #45 workflow completion semantics.
+
+## Project API boundary (#68)
+
+ProjectController returns ProjectSummaryDto/PageDto and accepts strict metadata
+requests. ProjectService owns transactions and delegates JWT-email/space authority
+to SpaceAccessService. Reads require membership; create/update use space.update and
+delete uses space.delete. Space then project locking coordinates all current
+mutation paths. ProjectsRepository handles scoped metadata pages; WorkItemsRepository
+computes completion aggregates once per page. No controller accesses persistence,
+no project collection traversal occurs, and deleted ancestors block descendants.
+See API_CONTRACT.md for precise search, paging, metrics and PATCH semantics.
