@@ -34,7 +34,7 @@
 - [x] Start task-owned local PostgreSQL/backend via mvnw.cmd spring-boot:run; verify startup PID/port, /api/health, authorized CRUD, invalid/unauthorized requests and /v3/api-docs. Stop only task-owned resources.
 - [x] Run docker info and mvnw.cmd clean verify, all tests zero skipped. Fix failures and repeat affected smoke/full validation after changes.
 - [x] Self-review security, concurrency, schema, API compatibility and acceptance criteria.
-- [ ] Commit/push, PR to develop with plan/evidence; immediate @codex review and close issue per backend policy. Attach PR.
+- [x] Commit/push, PR to develop with plan/evidence; immediate @codex review and close issue per backend policy. Attach PR.
 - [ ] Inspect CI/review, fix valid findings, validate, reply/resolve and request fresh review. Record blockers/rules if useful.
 - [ ] Merge/deployment outside requested scope; leave pending until explicitly authorized.
 
@@ -48,3 +48,5 @@ Local startup: isolated PostgreSQL 16 container kheera-issue69-smoke on loopback
 Automatic approval review briefly blocked Maven at a usage limit; the owner's continue resumed validation successfully. No workaround or skipped check used. Upstream develop refreshed on resume and was unchanged. No tools/dependencies installed.
 
 Final pre-PR validation (2026-10-02): `docker info` confirmed Linux engine 29.7.2; `mvnw.cmd clean verify` passed 139 tests with zero failures, errors or skipped tests and built the executable JAR. Local startup/HTTP/OpenAPI smoke above tested the same application source. Self-review confirmed bounded paging, safe JSON errors, no client ownership fields, shared write-lock ordering, preserved move URL/board fields, transactional rollback, and no dependencies/secrets/generated files added. Test logs remain outside the repository. No new workflow rule needed: existing TDD and compatibility checks caught the concrete failures. CI/review/merge remain pending.
+
+Delivery: [PR #84](https://github.com/AbidShaik09/Kheera-Backend/pull/84) targets develop; implementation commit 6c7abf4. Immediate [Codex review request](https://github.com/AbidShaik09/Kheera-Backend/pull/84#issuecomment-5958336282) accepted. Issue #69 closed under backend policy; remaining CI/review tracked on the PR. No merge requested.
