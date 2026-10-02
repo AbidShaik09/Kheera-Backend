@@ -129,3 +129,5 @@ References: [database design](../architecture/DATABASE_DESIGN.md),
 [testing strategy](../testing/TESTING_STRATEGY.md),
 [application progress](../workspace/progress/APPLICATION_PROGRESS.md),
 [documentation standards](../workspace/governance/DOCUMENTATION_STANDARDS.md).
+
+Issue #69 authorized work-item CRUD started: [implementation plan](issue-plans/issue-69_work-item-crud.md). Dependencies #66/#67/#68 and workflow stages are implemented; task CRUD will unblock frontend #65.
