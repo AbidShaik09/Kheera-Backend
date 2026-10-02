@@ -50,3 +50,13 @@ Automatic approval review briefly blocked Maven at a usage limit; the owner's co
 Final pre-PR validation (2026-10-02): `docker info` confirmed Linux engine 29.7.2; `mvnw.cmd clean verify` passed 139 tests with zero failures, errors or skipped tests and built the executable JAR. Local startup/HTTP/OpenAPI smoke above tested the same application source. Self-review confirmed bounded paging, safe JSON errors, no client ownership fields, shared write-lock ordering, preserved move URL/board fields, transactional rollback, and no dependencies/secrets/generated files added. Test logs remain outside the repository. No new workflow rule needed: existing TDD and compatibility checks caught the concrete failures. CI/review/merge remain pending.
 
 Delivery: [PR #84](https://github.com/AbidShaik09/Kheera-Backend/pull/84) targets develop; implementation commit 6c7abf4. Immediate [Codex review request](https://github.com/AbidShaik09/Kheera-Backend/pull/84#issuecomment-5958336282) accepted. Issue #69 closed under backend policy; remaining CI/review tracked on the PR. No merge requested.
+
+## Review triage
+| Thread | Verdict and evidence | Repair |
+|---|---|---|
+| 4168478441 | Real: legacy cross-project parent FK accepted; board showed 2 tasks while detail rejected them | Seed hidden traversal with cross-project parent edges and propagate to same-project descendants; active/deleted foreign parents both hidden |
+| 4168478447 | Real: foreign-space legacy member was marked active | Suppress foreign member ID/name and mark inactive; apply the same scope check to legacy type metadata |
+
+Both PostgreSQL regression tests failed before repair. Existing write validation already rejects new cross-scope relationships; reads must also validate legacy FK scope. Full validation/local smoke pending for the repair; prior green CI is not evidence for this changed source.
+
+Review repair validation: 10 targeted task integration tests passed. Fresh local startup PID 9240 owned port 18069; complete HTTP/OpenAPI smoke plus legacy foreign parent/type/assignment checks passed. Stopped that process, then docker info and mvnw.cmd clean verify passed 141 tests, zero failures/errors/skips. No schema change required for these read-boundary repairs. Fresh CI/review pending at this snapshot.

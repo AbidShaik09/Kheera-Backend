@@ -753,3 +753,8 @@ Run these with WorkflowBoardIntegrationTest and ProjectIntegrationTest, then
 the full Docker-backed clean verify and separate local HTTP smoke. All tests
 must run with zero skips. Test credentials are disposable; never reuse production
 accounts or DB state for local smoke tests.
+
+Legacy single-column foreign keys may contain cross-project parents/types or
+cross-space assignees even when current writes are validated. Include such
+fixtures when exposing relationship metadata; list/detail/move visibility must
+agree, and foreign display names must not leak through historical references.

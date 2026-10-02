@@ -11,6 +11,9 @@ public record BoardWorkItemDto(UUID id, UUID projectId, String title, UUID stage
         var stage = item.getWorkflow();
         var type = item.getWorkItemType();
         var member = item.getSpaceMember();
+        // Legacy FKs did not enforce project/space scope. Never expose foreign metadata.
+        if (type != null && (type.getProject() == null || !type.getProject().getId().equals(item.getProject().getId()))) type = null;
+        if (member != null && !member.getSpace().getId().equals(item.getProject().getSpace().getId())) member = null;
         boolean active = member != null && !member.isDeleted() && !member.getUser().isDeleted()
                 && !member.getSpaceRole().isDeleted() && !member.getSpace().isDeleted()
                 && member.getSpaceRole().getSpace().getId().equals(member.getSpace().getId());

@@ -189,4 +189,34 @@ class WorkItemIntegrationTest extends PostgreSqlIntegrationTest {
         var fourth=create(project,"{\"title\":\"Fourth\"}");
         assertThat(fourth.get("position").asInt()).isEqualTo(1);
     }
+
+    @Test void legacyForeignAncestorsAreHiddenFromBoardAndDetail() throws Exception {
+        UUID project=project(space()), foreign=project(space());
+        UUID parent=id(create(foreign,"{\"title\":\"Foreign\"}"));
+        UUID child=id(create(project,"{\"title\":\"Bad legacy link\"}"));
+        UUID grandchild=id(create(project,"{\"title\":\"Descendant\",\"parentId\":\""+child+"\"}"));
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,child);
+        for(boolean deleted:List.of(false,true)) {
+            jdbc.update("update work_items set is_deleted=? where id=?",deleted,parent);
+            mvc.perform(get(collection(project)).header("Authorization",token())).andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalItems").value(0)).andExpect(jsonPath("$.items").isEmpty());
+            for(UUID hidden:List.of(child,grandchild))
+                mvc.perform(get(path(hidden)).header("Authorization",token())).andExpect(status().isNotFound());
+        }
+    }
+
+    @Test void legacyForeignAssignmentAndTypeDoNotExposeOtherSpaceMetadata() throws Exception {
+        UUID project=project(space()), foreignSpace=space(), foreign=project(foreignSpace);
+        var user=users.saveAndFlush(new User("private@example.com","hash","Private foreign name"));
+        UUID member=jdbc.queryForObject("insert into space_members(user_id,space_id,space_role_id) select ?,?,space_role_id from space_members where space_id=? limit 1 returning id",UUID.class,user.getId(),foreignSpace,foreignSpace);
+        UUID type=jdbc.queryForObject("select id from work_item_types where project_id=?",UUID.class,foreign);
+        jdbc.update("update work_item_types set name='Private foreign type' where id=?",type);
+        UUID item=id(create(project,"{\"title\":\"Legacy\"}"));
+        jdbc.update("update work_items set assigned_to_id=?,work_item_type_id=? where id=?",member,type,item);
+        mvc.perform(get(path(item)).header("Authorization",token())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.assigneeActive").value(false)).andExpect(jsonPath("$.assigneeName").isEmpty())
+                .andExpect(jsonPath("$.assigneeMemberId").isEmpty()).andExpect(jsonPath("$.typeId").isEmpty()).andExpect(jsonPath("$.typeName").isEmpty());
+        mvc.perform(get(collection(project)).header("Authorization",token())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].assigneeName").isEmpty()).andExpect(jsonPath("$.items[0].typeName").isEmpty());
+    }
 }

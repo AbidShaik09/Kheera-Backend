@@ -9,7 +9,8 @@ import java.util.*;
 public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
     String VISIBLE = """
         with recursive hidden(id) as (
-            select id from work_items where project_id=:projectId and is_deleted
+            select w.id from work_items w left join work_items p on p.id=w.parent_item_id
+            where w.project_id=:projectId and (w.is_deleted or p.project_id<>:projectId)
             union
             select w.id from work_items w join hidden h on w.parent_item_id=h.id where w.project_id=:projectId
         )

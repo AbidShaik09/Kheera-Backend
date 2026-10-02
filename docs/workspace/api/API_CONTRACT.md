@@ -346,8 +346,12 @@ their stage reference.
 BoardWorkItem is `{id,projectId,title,stageId,stageName,complete,position,typeId,typeName,parentId,assigneeMemberId,assigneeName,assigneeActive}`.
 Type/parent/assignment fields can be null for historical/unassigned tasks.
 Assignee identity is a **space membership UUID**, never a user UUID. Historical
-assignees retain their name and ID with `assigneeActive=false` when membership,
+same-space assignees retain their name and ID with `assigneeActive=false` when membership,
 user or role becomes inactive. No passwords, emails or entity graphs are exposed.
+Legacy foreign-project types and foreign-space assignments are returned as null
+metadata, never another space's names; foreign assignments are inactive. Tasks
+with any foreign-project parent in their ancestry are excluded from board,
+detail and moves, whether that parent is active or deleted.
 Detail adds `spaceId,description,efforts,plannedStartDate,plannedEndDate,actualStartDate,actualEndDate,createdAt,updatedAt`.
 Clients use task UUIDs for navigation; there is no project key/issue number.
 The GET response is `{items,page,size,totalItems,totalPages,groups}`; page defaults
