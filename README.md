@@ -2,6 +2,12 @@
 
 Spring Boot backend for the Kheera project.
 
+Task APIs support project-scoped creation, detail, PATCH, soft deletion, type
+selection and filtered board reads. Assignment uses space membership IDs;
+sprints, comments and uploads remain separate slices. See the
+[task contract](docs/workspace/api/API_CONTRACT.md#6-work-items-and-task-details)
+and [issue #69 plan](docs/planning/issue-plans/issue-69_work-item-crud.md).
+
 ## Project Documentation
 
 - [Engineering standards](docs/engineering/ENGINEERING_STANDARDS.md)

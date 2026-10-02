@@ -10,7 +10,7 @@
 - Canonical assignment field/filter: assigneeMemberId (space_members.id); reject assigneeId. title required trimmed <=255, description nullable <=500, efforts nonnegative integer default 1; planned/actual ISO instant pairs ordered. PATCH omission preserves, null clears description/parent/assignee/dates, required title/type/stage/efforts cannot clear.
 - Create defaults to first active stage and first active project type ordered by name/id; V27 provisions Task for existing/new projects without active types. Preserve legacy task/type data. Migration adds provisioning and query indexes only; forward fix with a new migration, never edit released migrations.
 - Same-project active type/stage/parent and same-space active assignee required. Deleted/inactive historical assignees remain readable with active=false and can be cleared. Parent cycles rejected; parent deletion with active children returns 409. Space then project locks serialize create/update/delete with existing move/stage/project/member writes; use fresh entities after locks. Reads use repeatable-read snapshots.
-- WorkItemWriteRequest validates exact JSON types and presence; WorkItemService owns transactions/security; WorkItemController HTTP/status/OpenAPI; repositories own scoped queries. Existing WorkflowStageController board endpoint delegates enhanced reads; move ownership stays unchanged. Board DTO gains nullable type/assignment/parent metadata without removing existing fields.
+- WorkItemWriteRequest validates exact JSON types and presence; WorkItemService owns transactions/security; WorkItemController HTTP/status/OpenAPI; repositories own scoped queries. The existing board URL moves from WorkflowStageController to WorkItemController; move ownership stays unchanged. Board DTO gains nullable type/assignment/parent metadata without removing existing fields.
 - Board filters stageId/typeId/assigneeMemberId/parentId/q are ANDed; literal case-insensitive title/description search, page 0..100000, size 1..100, q <=100, stable stage position/item position/UUID order; groups only current-page items and global filtered totals. Deleted parents hide descendants from detail/list/move; direct children discoverable via parentId filter.
 
 ## Acceptance and tests
@@ -26,17 +26,25 @@
 
 ## Ordered execution
 - [x] Verify issue, baseline, dependencies, Docker and rules.
-- [ ] Commit plan/TODO before code/tests.
-- [ ] Write HTTP/PostgreSQL behavior tests and record failing missing endpoints; write request/service tests before implementations.
-- [ ] Add V27 provisioning/index migration and validate upgrade behavior.
-- [ ] Add scoped repository reads, DTOs, service and controller; enhance board metadata/filters without breaking frontend consumers; run targeted tests.
-- [ ] Update API_CONTRACT, APPLICATION_ARCHITECTURE, database findings, TESTING_STRATEGY, README, TODO and progress.
-- [ ] Start task-owned local PostgreSQL/backend via mvnw.cmd spring-boot:run; verify startup PID/port, /api/health, authorized CRUD, invalid/unauthorized requests and /v3/api-docs. Stop only task-owned resources.
-- [ ] Run docker info and mvnw.cmd clean verify, all tests zero skipped. Fix failures and repeat affected smoke/full validation after changes.
-- [ ] Self-review security, concurrency, schema, API compatibility and acceptance criteria.
+- [x] Commit plan/TODO before code/tests (2dddb00).
+- [x] Write HTTP/PostgreSQL behavior tests and record failing missing endpoints. HTTP tests preceded implementation; supplemental isolated request/service tests were added after those behavior tests passed their initial red phase.
+- [x] Add V27 provisioning/index migration and validate upgrade behavior.
+- [x] Add scoped repository reads, DTOs, service and controller; enhance board metadata/filters without breaking frontend consumers; run targeted tests.
+- [x] Update API_CONTRACT, APPLICATION_ARCHITECTURE, database findings, TESTING_STRATEGY, README, TODO and progress.
+- [x] Start task-owned local PostgreSQL/backend via mvnw.cmd spring-boot:run; verify startup PID/port, /api/health, authorized CRUD, invalid/unauthorized requests and /v3/api-docs. Stop only task-owned resources.
+- [x] Run docker info and mvnw.cmd clean verify, all tests zero skipped. Fix failures and repeat affected smoke/full validation after changes.
+- [x] Self-review security, concurrency, schema, API compatibility and acceptance criteria.
 - [ ] Commit/push, PR to develop with plan/evidence; immediate @codex review and close issue per backend policy. Attach PR.
 - [ ] Inspect CI/review, fix valid findings, validate, reply/resolve and request fresh review. Record blockers/rules if useful.
 - [ ] Merge/deployment outside requested scope; leave pending until explicitly authorized.
 
 ## Evidence
-Initial plan snapshot; no implementation tests run yet. Local smoke and full clean verification required before push. No tools/dependencies installed.
+Initial TDD: five WorkItemIntegrationTest cases failed with missing endpoint statuses (404/405), zero errors/skips. WorkItemMigrationIntegrationTest failed because default Task types were absent. Initial implementation exposed missing new-controller error advice; registered it with the existing JSON handler.
+
+The deleted-parent move regression failed (200 instead of 404); the existing move service now applies the same ancestor visibility check. Targeted tests then passed 39 cases. Self-review against the existing board contract found position compaction was required: a new stage PATCH/deletion regression failed before compaction was implemented. Final targeted command `mvnw.cmd -Dtest=WorkItemIntegrationTest,WorkItemMigrationIntegrationTest,WorkItemServiceTest,WorkItemWriteRequestTest,WorkflowBoardIntegrationTest,ProjectIntegrationTest test` passed 40 tests, zero failures/errors/skips.
+
+Local startup: isolated PostgreSQL 16 container kheera-issue69-smoke on loopback 15469, backend via `mvnw.cmd spring-boot:run` with disposable environment on 18069. Verified startup PID 8260 owned port 18069. Health, project/type defaults, task CRUD, PATCH clearing/preservation, cyclic-parent 400, parent-delete 409, filtered board, stage PATCH/move, invalid effort/sprint 400, missing authentication 401, missing/deleted task 404, missing grant 403, and generated typed WorkItemInput OpenAPI all passed. No real SMTP/account/database used. Stopped only the verified task-owned server before full clean verification.
+
+Automatic approval review briefly blocked Maven at a usage limit; the owner's continue resumed validation successfully. No workaround or skipped check used. Upstream develop refreshed on resume and was unchanged. No tools/dependencies installed.
+
+Final pre-PR validation (2026-10-02): `docker info` confirmed Linux engine 29.7.2; `mvnw.cmd clean verify` passed 139 tests with zero failures, errors or skipped tests and built the executable JAR. Local startup/HTTP/OpenAPI smoke above tested the same application source. Self-review confirmed bounded paging, safe JSON errors, no client ownership fields, shared write-lock ordering, preserved move URL/board fields, transactional rollback, and no dependencies/secrets/generated files added. Test logs remain outside the repository. No new workflow rule needed: existing TDD and compatibility checks caught the concrete failures. CI/review/merge remain pending.

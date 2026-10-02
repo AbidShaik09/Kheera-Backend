@@ -5,7 +5,6 @@ import com.knightdevelopers.kheerabackend.entity.project.*;
 import com.knightdevelopers.kheerabackend.entity.workitem.WorkItems;
 import com.knightdevelopers.kheerabackend.repository.*;
 import com.knightdevelopers.kheerabackend.web.SpaceApiException;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
@@ -30,24 +29,6 @@ public class WorkflowStageService {
     public List<WorkflowStageDto> list(String email, UUID projectId) {
         authorize(email, projectId, false);
         return stages.findActiveByProject(projectId).stream().map(this::dto).toList();
-    }
-
-    @Transactional(readOnly = true, isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
-    public BoardPageDto board(String email, UUID projectId, UUID stageId, String groupBy, int page, int size) {
-        authorize(email, projectId, false);
-        if (page < 0 || size < 1 || size > 100)
-            throw SpaceApiException.invalid("page", "Page must be non-negative and size between 1 and 100.");
-        if (groupBy != null && !groupBy.equals("stage"))
-            throw SpaceApiException.invalid("groupBy", "Only stage grouping is supported.");
-        var columns = stages.findActiveByProject(projectId);
-        if (stageId != null) findStage(columns, stageId);
-        var result = workItems.findBoard(projectId, stageId, PageRequest.of(page, size));
-        var items = result.getContent().stream().map(BoardWorkItemDto::from).toList();
-        var groups = groupBy == null ? List.<BoardPageDto.StageGroup>of() : columns.stream()
-                .filter(s -> stageId == null || s.getId().equals(stageId))
-                .map(s -> new BoardPageDto.StageGroup(dto(s),
-                        items.stream().filter(i -> i.stageId().equals(s.getId())).toList())).toList();
-        return new BoardPageDto(items, page, size, result.getTotalElements(), result.getTotalPages(), groups);
     }
 
     @Transactional
@@ -106,6 +87,7 @@ public class WorkflowStageService {
         UUID projectId = workItems.findActiveProjectId(workItemId).orElseThrow(SpaceApiException::resourceNotFound);
         authorize(email, projectId, true);
         request.validate();
+        if (!workItems.isVisible(workItemId)) throw SpaceApiException.resourceNotFound();
         var target = findStage(stages.findActiveByProject(projectId), request.stageId());
         var all = workItems.findActiveByProject(projectId);
         var item = all.stream().filter(w -> w.getId().equals(workItemId)).findFirst()

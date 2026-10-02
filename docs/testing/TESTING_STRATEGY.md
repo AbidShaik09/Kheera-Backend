@@ -739,3 +739,17 @@ startup and owns the selected test port. A healthy response from an older proces
 does not validate current code. Spring Boot may put its classpath in a Java argfile;
 identify the task-owned process using startup PID and listening port before cleanup,
 then verify it exited. Never stop unrelated listeners to reuse a port.
+## Work-item verification (#69)
+
+WorkItemIntegrationTest uses real JWT/MockMvc/Flyway/PostgreSQL for CRUD/statuses,
+omission/null PATCH behavior, scoped relationships, historical assignees,
+invalid ranges/effort/cycles, rollback, filtered counts, deleted ancestors,
+position compaction, OpenAPI, opposite reparent races and child-create/parent-delete
+races. WorkItemMigrationIntegrationTest upgrades V26 fixtures and verifies
+default-type provisioning preserves custom types and historical references.
+WorkItemWriteRequestTest covers strict JSON scalar types/lengths/UUIDs;
+WorkItemServiceTest checks authorization and space-before-project lock ordering.
+Run these with WorkflowBoardIntegrationTest and ProjectIntegrationTest, then
+the full Docker-backed clean verify and separate local HTTP smoke. All tests
+must run with zero skips. Test credentials are disposable; never reuse production
+accounts or DB state for local smoke tests.

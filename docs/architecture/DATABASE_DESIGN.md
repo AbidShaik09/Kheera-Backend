@@ -303,3 +303,20 @@ Project writes take the active space lock, then the project lock for update/dele
 this shares the board/membership lock order. Soft deletion retains all children,
 while existing descendant authorization rejects the deleted project. No migration
 or backfill is needed; no existing null sprint-cycle values are rewritten.
+## Task lifecycle migration (#69)
+
+V27 provisions a Task type for existing projects with no active type and adds a
+project-insert trigger for new projects. Existing custom types and historical
+task type references (including null) are preserved. Query indexes support
+parent traversal and project-scoped type/member filters. No sprint relation or
+issue-number schema is introduced. Apply a new forward migration for future
+changes; do not amend already applied V27 or remove referenced type rows.
+
+Task writes serialize on the space then project row, sharing the stage/move and
+membership lock protocol. Parent links are checked under those locks, preventing
+concurrent API reparenting cycles and create/delete orphan races. Parent deletion
+with active children returns 409; deletions retain rows and historical content.
+Filtered reads exclude descendants of soft-deleted parents with a recursive CTE.
+The database stage constraint remains deferred so moves/deletes can compact
+positions atomically. Cross-project type/parent and inactive assignment checks
+belong to the authorized service; direct SQL writers must follow the same rules.

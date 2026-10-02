@@ -7,6 +7,55 @@ import org.springframework.data.domain.*;
 import java.util.*;
 
 public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
+    String VISIBLE = """
+        with recursive hidden(id) as (
+            select id from work_items where project_id=:projectId and is_deleted
+            union
+            select w.id from work_items w join hidden h on w.parent_item_id=h.id where w.project_id=:projectId
+        )
+        """;
+    String FILTER = """
+        from work_items w join project_workflows s on s.id=w.workflow_id
+        where w.project_id=:projectId and not w.is_deleted and not s.is_deleted
+          and w.id not in (select id from hidden)
+          and (:stageId is null or w.workflow_id=:stageId)
+          and (:typeId is null or w.work_item_type_id=:typeId)
+          and (:memberId is null or w.assigned_to_id=:memberId)
+          and (:parentId is null or w.parent_item_id=:parentId)
+          and (strpos(lower(coalesce(w.title,'')),lower(:q))>0 or strpos(lower(coalesce(w.description,'')),lower(:q))>0)
+        """;
+    @Query(value=VISIBLE+"select w.id "+FILTER+" order by s.position,w.position,w.id",
+            countQuery=VISIBLE+"select count(*) "+FILTER,nativeQuery=true)
+    Page<UUID> findFilteredIds(@Param("projectId") UUID projectId,@Param("stageId") UUID stageId,
+            @Param("typeId") UUID typeId,@Param("memberId") UUID memberId,@Param("parentId") UUID parentId,
+            @Param("q") String q,Pageable pageable);
+
+    @EntityGraph(attributePaths={"project.space","workflow","workItemType","parentItem","spaceMember.user","spaceMember.spaceRole.space","spaceMember.space"})
+    @Query("select w from WorkItems w where w.id in :ids")
+    List<WorkItems> fetchDetails(@Param("ids") Collection<UUID> ids);
+
+    @Query(value="""
+        with recursive ancestors(id,parent_item_id,project_id,is_deleted) as (
+            select id,parent_item_id,project_id,is_deleted from work_items where id=:id
+            union
+            select p.id,p.parent_item_id,p.project_id,p.is_deleted from work_items p join ancestors a on p.id=a.parent_item_id
+        )
+        select exists(select 1 from work_items w join project_workflows s on s.id=w.workflow_id
+            join projects p on p.id=w.project_id join spaces sp on sp.id=p.space_id
+            where w.id=:id and not w.is_deleted and not s.is_deleted and not p.is_deleted and not sp.is_deleted
+            and not exists(select 1 from ancestors a where a.is_deleted or a.project_id<>w.project_id))
+        """,nativeQuery=true)
+    boolean isVisible(@Param("id") UUID id);
+
+    @Query("select count(w) from WorkItems w where w.parentItem.id=:id and w.isDeleted=false")
+    long countActiveChildren(@Param("id") UUID id);
+
+    @Query("select coalesce(max(w.position)+1,0) from WorkItems w where w.workflow.id=:stageId and w.isDeleted=false")
+    int nextPosition(@Param("stageId") UUID stageId);
+
+    @Query("select w from WorkItems w where w.workflow.id=:stageId and w.isDeleted=false order by w.position,w.id")
+    List<WorkItems> findActiveByStage(@Param("stageId") UUID stageId);
+
     interface ProjectMetrics {
         UUID getProjectId();
         long getTotal();
@@ -23,10 +72,6 @@ public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
 
     @Query("select w from WorkItems w join fetch w.workflow where w.project.id=:projectId and w.isDeleted=false order by w.workflow.position,w.position,w.id")
     List<WorkItems> findActiveByProject(@Param("projectId") UUID projectId);
-
-    @Query(value="select w from WorkItems w join fetch w.workflow where w.project.id=:projectId and w.isDeleted=false and w.workflow.isDeleted=false and (:stageId is null or w.workflow.id=:stageId) order by w.workflow.position,w.position,w.id",
-        countQuery="select count(w) from WorkItems w where w.project.id=:projectId and w.isDeleted=false and w.workflow.isDeleted=false and (:stageId is null or w.workflow.id=:stageId)")
-    Page<WorkItems> findBoard(@Param("projectId") UUID projectId, @Param("stageId") UUID stageId, Pageable pageable);
 
     @Query("select count(w) from WorkItems w where w.workflow.id=:stageId and w.isDeleted=false")
     long countActiveByStage(@Param("stageId") UUID stageId);
