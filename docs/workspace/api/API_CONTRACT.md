@@ -334,6 +334,8 @@ their stage reference.
 
 ### 6. Work items and task details
 
+Task positions are zero-based ordinals among all visible tasks in their stage, before optional board filters or pagination. Hidden legacy rows do not consume public positions or move insertion indexes.
+
 | Method and path | Status | Purpose |
 | --- | --- | --- |
 | `GET /api/projects/{projectId}/work-items` | Implemented (#69) | AND filters `stageId`, `typeId`, `assigneeMemberId`, `parentId`, `q`; optional stage grouping and bounded pagination. |

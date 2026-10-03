@@ -34,7 +34,7 @@ public class WorkItemService {
     @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
     public WorkItemDetailDto detail(String email,UUID id) {
         authorizeItem(email,id,false);
-        return WorkItemDetailDto.from(item(id));
+        return detailDto(item(id));
     }
     @Transactional
     public WorkItemDetailDto create(String email,UUID projectId,WorkItemWriteRequest request) {
@@ -43,7 +43,7 @@ public class WorkItemService {
         var item=new WorkItems(); item.assignProject(project);
         apply(item,request,true);
         items.saveAndFlush(item);
-        return WorkItemDetailDto.from(item);
+        return detailDto(item);
     }
     @Transactional
     public WorkItemDetailDto update(String email,UUID id,WorkItemWriteRequest request) {
@@ -52,13 +52,13 @@ public class WorkItemService {
         request.validate(false);
         apply(item,request,false);
         items.flush();
-        return WorkItemDetailDto.from(item);
+        return detailDto(item);
     }
     @Transactional
     public void delete(String email,UUID id) {
         authorizeItem(email,id,true);
         var item=item(id);
-        if(items.countActiveChildren(id)>0) throw SpaceApiException.conflict("TASK_HAS_CHILDREN","Remove or reparent active children before deleting this task.");
+        if(items.countActiveChildren(id,item.getProject().getId())>0) throw SpaceApiException.conflict("TASK_HAS_CHILDREN","Remove or reparent active children before deleting this task.");
         item.setDeleted(true); item.setUpdatedAt(Instant.now());
         compact(item.getWorkflow().getId());
     }
@@ -73,13 +73,16 @@ public class WorkItemService {
         if(stageId!=null && columns.stream().noneMatch(s->s.getId().equals(stageId))) throw SpaceApiException.resourceNotFound();
         // Type/member/parent filters are scoped by the base project query, including historical IDs.
         var result=items.findFilteredIds(projectId,stageId,typeId,memberId,parentId,q.strip(),PageRequest.of(page,size));
-        var details=result.isEmpty()?Map.<UUID,WorkItems>of():items.fetchDetails(result.getContent()).stream().collect(Collectors.toMap(WorkItems::getId,Function.identity()));
-        var rows=result.getContent().stream().map(id->BoardWorkItemDto.from(details.get(id))).toList();
+        var details=result.isEmpty()?Map.<UUID,WorkItems>of():items.fetchDetails(result.getContent().stream().map(WorkItemsRepository.BoardRow::getId).toList()).stream().collect(Collectors.toMap(WorkItems::getId,Function.identity()));
+        var rows=result.getContent().stream().map(row->BoardWorkItemDto.from(details.get(row.getId()),row.getPosition())).toList();
         var groups=groupBy==null?List.<BoardPageDto.StageGroup>of():columns.stream()
                 .filter(s->stageId==null || stageId.equals(s.getId()))
                 .map(s->new BoardPageDto.StageGroup(new WorkflowStageDto(s.getId(),s.getWorkflowName(),s.getIcon(),s.getPosition(),s.isComplete()),
                         rows.stream().filter(i->i.stageId().equals(s.getId())).toList())).toList();
         return new BoardPageDto(rows,page,size,result.getTotalElements(),result.getTotalPages(),groups);
+    }
+    private WorkItemDetailDto detailDto(WorkItems item) {
+        return WorkItemDetailDto.from(item,items.visiblePosition(item.getProject().getId(),item.getId()));
     }
     private Projects authorize(String email,UUID projectId,boolean mutation) {
         access.requireActiveUser(email);

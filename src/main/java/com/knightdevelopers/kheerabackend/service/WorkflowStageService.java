@@ -90,18 +90,23 @@ public class WorkflowStageService {
         if (!workItems.isVisible(workItemId)) throw SpaceApiException.resourceNotFound();
         var target = findStage(stages.findActiveByProject(projectId), request.stageId());
         var all = workItems.findActiveByProject(projectId);
+        var hidden = workItems.hiddenIds(projectId);
         var item = all.stream().filter(w -> w.getId().equals(workItemId)).findFirst()
                 .orElseThrow(SpaceApiException::resourceNotFound);
         UUID sourceId = item.getWorkflow().getId();
-        var source = new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && !w.getId().equals(workItemId)).toList());
+        var source = new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && !w.getId().equals(workItemId) && !hidden.contains(w.getId())).toList());
         var destination = sourceId.equals(target.getId()) ? source :
-                new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId())).toList());
-        destination.add(insertionPosition(request.position(), destination.size()), item);
+                new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId()) && !hidden.contains(w.getId())).toList());
+        int position = insertionPosition(request.position(), destination.size());
+        destination.add(position, item);
+        // Keep hidden legacy rows after visible rows so physical positions remain unique.
+        source.addAll(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && hidden.contains(w.getId())).toList());
+        if (destination != source) destination.addAll(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId()) && hidden.contains(w.getId())).toList());
         item.moveToWorkflow(target, 0);
         renumberItems(source);
         if (destination != source) renumberItems(destination);
         item.setUpdatedAt(Instant.now());
-        return BoardWorkItemDto.from(item);
+        return BoardWorkItemDto.from(item, position);
     }
 
     private void authorize(String email, UUID projectId, boolean mutation) {

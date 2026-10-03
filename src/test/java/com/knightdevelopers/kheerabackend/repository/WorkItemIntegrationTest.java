@@ -219,4 +219,44 @@ class WorkItemIntegrationTest extends PostgreSqlIntegrationTest {
         mvc.perform(get(collection(project)).header("Authorization",token())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].assigneeName").isEmpty()).andExpect(jsonPath("$.items[0].typeName").isEmpty());
     }
+
+    @Test void foreignLegacyChildrenCannotPermanentlyBlockDeletion() throws Exception {
+        UUID project=project(space()), foreign=project(space());
+        UUID parent=id(create(project,"{\"title\":\"Parent\"}"));
+        UUID child=id(create(foreign,"{\"title\":\"Legacy child\"}"));
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,child);
+        mvc.perform(delete(path(parent)).header("Authorization",token())).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("select is_deleted from work_items where id=?",Boolean.class,child)).isFalse();
+    }
+
+    @Test void hiddenTasksDoNotShiftBoardPositionsOrMoveIndexes() throws Exception {
+        UUID project=project(space()), foreign=project(space());
+        UUID parent=id(create(foreign,"{\"title\":\"Foreign parent\"}"));
+        var hidden=create(project,"{\"title\":\"Hidden\"}");
+        var a=create(project,"{\"title\":\"A\"}");
+        var b=create(project,"{\"title\":\"B\"}");
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,id(hidden));
+        mvc.perform(get(collection(project)).header("Authorization",token()).param("q","B"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.items[0].position").value(1));
+        mvc.perform(get(path(id(b))).header("Authorization",token())).andExpect(status().isOk()).andExpect(jsonPath("$.position").value(1));
+        mvc.perform(post(path(id(b))+"/move").header("Authorization",token()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"stageId\":\""+a.get("stageId").asText()+"\",\"position\":1}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.position").value(1));
+        mvc.perform(get(collection(project)).header("Authorization",token())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(id(a).toString())).andExpect(jsonPath("$.items[1].id").value(id(b).toString()))
+                .andExpect(jsonPath("$.items[0].position").value(0)).andExpect(jsonPath("$.items[1].position").value(1));
+        var c=create(project,"{\"title\":\"C\"}");
+        assertThat(c.get("position").asInt()).isEqualTo(2);
+        UUID target=jdbc.queryForObject("select id from project_workflows where project_id=? and position=1",UUID.class,project);
+        var targetHidden=create(project,"{\"title\":\"Hidden target\",\"stageId\":\""+target+"\"}");
+        var d=create(project,"{\"title\":\"D\",\"stageId\":\""+target+"\"}");
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,id(targetHidden));
+        mvc.perform(post(path(id(b))+"/move").header("Authorization",token()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"stageId\":\""+target+"\",\"position\":1}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.position").value(1));
+        mvc.perform(get(collection(project)).header("Authorization",token()).param("stageId",target.toString()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.items[0].id").value(id(d).toString()))
+                .andExpect(jsonPath("$.items[1].id").value(id(b).toString()));
+        mvc.perform(get(path(id(c))).header("Authorization",token())).andExpect(status().isOk()).andExpect(jsonPath("$.position").value(1));
+    }
 }

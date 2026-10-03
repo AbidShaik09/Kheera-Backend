@@ -13,10 +13,15 @@ public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
             where w.project_id=:projectId and (w.is_deleted or p.project_id<>:projectId)
             union
             select w.id from work_items w join hidden h on w.parent_item_id=h.id where w.project_id=:projectId
+        ), visible as (
+            select w.id, row_number() over(partition by w.workflow_id order by w.position,w.id)-1 as board_position
+            from work_items w join project_workflows s on s.id=w.workflow_id
+            where w.project_id=:projectId and not w.is_deleted and not s.is_deleted
+              and w.id not in (select id from hidden)
         )
         """;
     String FILTER = """
-        from work_items w join project_workflows s on s.id=w.workflow_id
+        from work_items w join project_workflows s on s.id=w.workflow_id join visible v on v.id=w.id
         where w.project_id=:projectId and not w.is_deleted and not s.is_deleted
           and w.id not in (select id from hidden)
           and (:stageId is null or w.workflow_id=:stageId)
@@ -25,9 +30,13 @@ public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
           and (:parentId is null or w.parent_item_id=:parentId)
           and (strpos(lower(coalesce(w.title,'')),lower(:q))>0 or strpos(lower(coalesce(w.description,'')),lower(:q))>0)
         """;
-    @Query(value=VISIBLE+"select w.id "+FILTER+" order by s.position,w.position,w.id",
+    interface BoardRow {
+        UUID getId();
+        int getPosition();
+    }
+    @Query(value=VISIBLE+"select w.id as id,v.board_position as position "+FILTER+" order by s.position,w.position,w.id",
             countQuery=VISIBLE+"select count(*) "+FILTER,nativeQuery=true)
-    Page<UUID> findFilteredIds(@Param("projectId") UUID projectId,@Param("stageId") UUID stageId,
+    Page<BoardRow> findFilteredIds(@Param("projectId") UUID projectId,@Param("stageId") UUID stageId,
             @Param("typeId") UUID typeId,@Param("memberId") UUID memberId,@Param("parentId") UUID parentId,
             @Param("q") String q,Pageable pageable);
 
@@ -48,8 +57,14 @@ public interface WorkItemsRepository extends JpaRepository<WorkItems, UUID> {
         """,nativeQuery=true)
     boolean isVisible(@Param("id") UUID id);
 
-    @Query("select count(w) from WorkItems w where w.parentItem.id=:id and w.isDeleted=false")
-    long countActiveChildren(@Param("id") UUID id);
+    @Query(value=VISIBLE+"select count(*) from work_items w join visible v on v.id=w.id where w.parent_item_id=:id",nativeQuery=true)
+    long countActiveChildren(@Param("id") UUID id,@Param("projectId") UUID projectId);
+
+    @Query(value=VISIBLE+"select board_position from visible where id=:id",nativeQuery=true)
+    int visiblePosition(@Param("projectId") UUID projectId,@Param("id") UUID id);
+
+    @Query(value=VISIBLE+"select id from hidden",nativeQuery=true)
+    Set<UUID> hiddenIds(@Param("projectId") UUID projectId);
 
     @Query("select coalesce(max(w.position)+1,0) from WorkItems w where w.workflow.id=:stageId and w.isDeleted=false")
     int nextPosition(@Param("stageId") UUID stageId);
