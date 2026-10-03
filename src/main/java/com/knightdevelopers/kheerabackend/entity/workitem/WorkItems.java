@@ -31,6 +31,8 @@ public class WorkItems extends BaseEntity {
     @Setter(AccessLevel.NONE)
     private Projects project;
 
+    public void assignProject(Projects project) { this.project = project; }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workflow_id", nullable = false)
     @Setter(AccessLevel.NONE)

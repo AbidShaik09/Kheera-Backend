@@ -321,7 +321,7 @@ their stage reference.
 | `POST /api/projects/{projectId}/workflow-stages` | Implemented | 201 created stage DTO. |
 | `PATCH /api/projects/{projectId}/workflow-stages/{stageId}` | Implemented | 200 updated stage DTO. |
 | `DELETE /api/projects/{projectId}/workflow-stages/{stageId}` | Implemented | 204; remove an empty non-final stage. |
-| `GET /api/projects/{projectId}/work-item-types` | Required | Type selector and epic/task grouping. |
+| `GET /api/projects/{projectId}/work-item-types` | Implemented (#69) | Active `{id,name,icon}` array ordered by name, UUID. V27 provisions Task when a project has no active types. |
 | `POST /api/projects/{projectId}/work-item-types` | Required | Create type. |
 | `PATCH /api/projects/{projectId}/work-item-types/{typeId}` | Required | Edit type name/icon. |
 | `DELETE /api/projects/{projectId}/work-item-types/{typeId}` | Required | Remove unused type. |
@@ -334,25 +334,58 @@ their stage reference.
 
 ### 6. Work items and task details
 
+Task positions are zero-based ordinals among all visible tasks in their stage, before optional board filters or pagination. Hidden legacy rows do not consume public positions or move insertion indexes. Project totals apply the same ancestor visibility rules. Type/member filters match historical links only within the project/space. Deleting a stage with only hidden legacy tasks relocates those rows to the first remaining stage, preserving history; visible tasks still prevent deletion.
+
 | Method and path | Status | Purpose |
 | --- | --- | --- |
-| `GET /api/projects/{projectId}/work-items` | Implemented stage slice (#45) | Supports `stageId`, `groupBy=stage`, `page`, `size`. Additional filters/fields remain #69. |
-| `POST /api/projects/{projectId}/work-items` | Required | Create task, epic, or child work item. |
-| `GET /api/work-items/{workItemId}` | Required | Task Details screen. |
-| `PATCH /api/work-items/{workItemId}` | Required | Update title, description, dates, effort, parent, type, assignee, sprint, and board stage. |
-| `DELETE /api/work-items/{workItemId}` | Required | Soft-delete a work item. |
+| `GET /api/projects/{projectId}/work-items` | Implemented (#69) | AND filters `stageId`, `typeId`, `assigneeMemberId`, `parentId`, `q`; optional stage grouping and bounded pagination. |
+| `POST /api/projects/{projectId}/work-items` | Implemented (#69) | 201 detail DTO and Location header; create task or child. |
+| `GET /api/work-items/{workItemId}` | Implemented (#69) | 200 task detail DTO. |
+| `PATCH /api/work-items/{workItemId}` | Implemented (#69) | 200 detail DTO; edit metadata and relationships. Sprint fields unsupported. |
+| `DELETE /api/work-items/{workItemId}` | Implemented (#69) | 204 soft deletion; 409 TASK_HAS_CHILDREN when active direct children remain. |
 | `POST /api/work-items/{workItemId}/move` | Implemented | 200 moved BoardWorkItem DTO; atomic stage/position change. |
 
-BoardWorkItem is `{id,projectId,title,stageId,stageName,complete,position}`.
+BoardWorkItem is `{id,projectId,title,stageId,stageName,complete,position,typeId,typeName,parentId,assigneeMemberId,assigneeName,assigneeActive}`.
+Type/parent/assignment fields can be null for historical/unassigned tasks.
+Assignee identity is a **space membership UUID**, never a user UUID. Historical
+same-space assignees retain their name and ID with `assigneeActive=false` when membership,
+user or role becomes inactive. No passwords, emails or entity graphs are exposed.
+Legacy foreign-project types and foreign-space assignments are returned as null
+metadata, never another space's names; foreign assignments are inactive. Tasks
+with any foreign-project parent in their ancestry are excluded from board,
+detail and moves, whether that parent is active or deleted.
+Detail adds `spaceId,description,efforts,plannedStartDate,plannedEndDate,actualStartDate,actualEndDate,createdAt,updatedAt`.
+Clients use task UUIDs for navigation; there is no project key/issue number.
 The GET response is `{items,page,size,totalItems,totalPages,groups}`; page defaults
-to 0, size to 25 (1–100). Sort is fixed: stage position, item position, UUID.
+to 0 (0–100000), size to 25 (1–100). Sort is fixed: stage position, item position, UUID.
 With `groupBy=stage`, groups are ordered `{stage,items}` objects, including empty
 columns, and contain only items on the current page. Totals describe the full
 filtered result; grouping does not bypass pagination. Without grouping, groups
-is empty. Deleted items/stages are excluded. Other groupBy values return 400.
+is empty. Deleted items/stages and descendants of deleted tasks are excluded. Other groupBy values return 400.
 The optional stageId must identify an active stage of the requested project.
-General CRUD, type/assignee/parent/text/sprint filters and full detail fields
-remain #69; clients must not rely on those filters in this revision.
+`q` is trimmed, literal case-insensitive title/description search (maximum 100
+characters). Type/member/parent UUID filters are scoped by the project query and
+can match historical references; unrelated IDs return an empty result. Children
+are discovered using `parentId`, with the same paging limits. Unknown query/body
+fields, including `sprintId` and the ambiguous `assigneeId`, return 400.
+
+Create/PATCH/delete require `space.update`; reads require active account,
+membership and role. Invisible resources/ancestors return 404, missing grants
+403 and inactive/missing authentication 401. Relationships on writes require
+an active same-project type/stage/parent and active same-space assignee. Cycles,
+invalid relationships and malformed fields return 400 VALIDATION_ERROR.
+
+Create requires trimmed nonblank title (maximum 255 characters); description is
+nullable (maximum 500), efforts is a nonnegative integer (default 1). Omitted
+type/stage select the first active type by name/UUID and stage by position/UUID.
+V27 provisions Task for existing and newly inserted projects without active
+types; it does not retype historical tasks or replace existing custom types.
+PATCH omission preserves fields. Null clears description, parentId,
+assigneeMemberId and dates; title/efforts/typeId/stageId cannot be cleared.
+Dates are ISO-8601 instants in years 0001–9999; when both endpoints exist, end
+must not precede start. Planned and actual ranges are checked independently,
+including against preserved PATCH values. Sprint relations are not mapped and
+are explicitly unsupported in this revision. Comments/uploads remain #11/#28.
 
 Move position is the zero-based destination index after removing the moving
 item. Omission appends and oversized values clamp to the end. Both affected
@@ -360,17 +393,19 @@ columns become contiguous; same-column moves use the same rule. Successful
 requests serialize on space then project rows before rereading board data.
 Concurrent requests apply in lock-acquisition order; repeated moves to the same
 explicit position preserve order. There is no optimistic stale-board rejection.
-Future create/delete/reparent APIs must use the same locks and compact positions.
+Create/delete/reparent/PATCH share these locks. Stage PATCH appends to the new
+column; stage PATCH and delete compact the source column. Deleting a parent
+requires removing or reparenting its active direct children first; soft-deleted
+tasks and their historical comments/attachments remain stored.
 
 ```json
 // CreateWorkItemRequest
 {
   "title": "Create and set up navbar component",
   "description": "...",
-  "workItemTypeId": "uuid",
-  "parentItemId": null,
+  "typeId": "uuid",
+  "parentId": null,
   "assigneeMemberId": "uuid",
-  "sprintId": "uuid",
   "stageId": "uuid",
   "efforts": 3,
   "plannedStartDate": "2026-09-14T00:00:00Z",
@@ -386,9 +421,9 @@ Future create/delete/reparent APIs must use the same locks and compact positions
 }
 ```
 
-The backend must verify that the type, sprint, stage, parent, and assignee all
-belong to the same project/space as the work item. It must also reject a parent
-relationship that creates a hierarchy cycle.
+Task writes verify scoped relationships under the space/project locks before
+committing; concurrent parent changes cannot create a cycle. No sprint
+assignment or fabricated issue numbering is accepted.
 
 ### 7. Comments and attachments
 

@@ -21,17 +21,6 @@ public class WorkflowStageController {
         return service.list(auth.getName(), projectId);
     }
 
-    @GetMapping("/api/projects/{projectId}/work-items")
-    @Operation(summary = "Read a paginated board, optionally filtered or grouped by stage",
-            description = "groupBy=stage groups items on the current page. Global totals count active items; positions are zero-based within a stage.")
-    public BoardPageDto board(Authentication auth, @PathVariable UUID projectId,
-                              @RequestParam(required = false) UUID stageId,
-                              @RequestParam(required = false) String groupBy,
-                              @RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "25") int size) {
-        return service.board(auth.getName(), projectId, stageId, groupBy, page, size);
-    }
-
     @PostMapping("/api/projects/{projectId}/workflow-stages")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a board stage", description = "Requires space.update. Position omitted appends; maximum 100 active stages.")

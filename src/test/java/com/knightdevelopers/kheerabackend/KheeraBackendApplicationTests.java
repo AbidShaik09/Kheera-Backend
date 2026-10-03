@@ -28,6 +28,7 @@ class KheeraBackendApplicationTests {
     @MockBean private com.knightdevelopers.kheerabackend.repository.ProjectsRepository projects;
     @MockBean private com.knightdevelopers.kheerabackend.repository.WorkflowStageRepository stages;
     @MockBean private com.knightdevelopers.kheerabackend.repository.WorkItemsRepository workItems;
+    @MockBean private com.knightdevelopers.kheerabackend.repository.WorkItemTypesRepository workItemTypes;
 
     @MockBean
     private UserRepository userRepository;

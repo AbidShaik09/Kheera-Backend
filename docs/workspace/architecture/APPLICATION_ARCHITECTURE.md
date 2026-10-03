@@ -140,3 +140,19 @@ mutation paths. ProjectsRepository handles scoped metadata pages; WorkItemsRepos
 computes completion aggregates once per page. No controller accesses persistence,
 no project collection traversal occurs, and deleted ancestors block descendants.
 See API_CONTRACT.md for precise search, paging, metrics and PATCH semantics.
+## Task API slice (#69)
+
+WorkItemController delegates task CRUD, type reads and filtered board reads to
+WorkItemService. The service resolves JWT email through active account/membership
+authorization and owns repeatable-read snapshots or space-then-project write
+locks. WorkflowStageService retains explicit move and stage management ownership;
+its move path also rejects tasks beneath deleted ancestors. DTOs expose only
+task metadata, project/type/stage/member UUIDs and historical assignee display
+names; no JPA entities cross HTTP boundaries. Detail children use the paginated
+parentId filter instead of an unbounded nested graph.
+
+Board reads page IDs with a scoped recursive SQL query, then fetch only that
+page's to-one metadata in one entity graph. Global totals and page groups use
+one repeatable-read snapshot. V27 provisions a default type without retyping
+historical data. Sprint selection, issue numbering, comments, uploads and visit
+history are outside this slice; unsupported input is rejected explicitly.

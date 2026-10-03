@@ -5,7 +5,6 @@ import com.knightdevelopers.kheerabackend.entity.project.*;
 import com.knightdevelopers.kheerabackend.entity.workitem.WorkItems;
 import com.knightdevelopers.kheerabackend.repository.*;
 import com.knightdevelopers.kheerabackend.web.SpaceApiException;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
@@ -30,24 +29,6 @@ public class WorkflowStageService {
     public List<WorkflowStageDto> list(String email, UUID projectId) {
         authorize(email, projectId, false);
         return stages.findActiveByProject(projectId).stream().map(this::dto).toList();
-    }
-
-    @Transactional(readOnly = true, isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
-    public BoardPageDto board(String email, UUID projectId, UUID stageId, String groupBy, int page, int size) {
-        authorize(email, projectId, false);
-        if (page < 0 || size < 1 || size > 100)
-            throw SpaceApiException.invalid("page", "Page must be non-negative and size between 1 and 100.");
-        if (groupBy != null && !groupBy.equals("stage"))
-            throw SpaceApiException.invalid("groupBy", "Only stage grouping is supported.");
-        var columns = stages.findActiveByProject(projectId);
-        if (stageId != null) findStage(columns, stageId);
-        var result = workItems.findBoard(projectId, stageId, PageRequest.of(page, size));
-        var items = result.getContent().stream().map(BoardWorkItemDto::from).toList();
-        var groups = groupBy == null ? List.<BoardPageDto.StageGroup>of() : columns.stream()
-                .filter(s -> stageId == null || s.getId().equals(stageId))
-                .map(s -> new BoardPageDto.StageGroup(dto(s),
-                        items.stream().filter(i -> i.stageId().equals(s.getId())).toList())).toList();
-        return new BoardPageDto(items, page, size, result.getTotalElements(), result.getTotalPages(), groups);
     }
 
     @Transactional
@@ -91,8 +72,20 @@ public class WorkflowStageService {
         var all = stages.findActiveByProject(projectId);
         var stage = findStage(all, stageId);
         if (all.size() == 1) throw SpaceApiException.conflict("LAST_STAGE", "A project must retain one active stage.");
-        if (workItems.countActiveByStage(stageId) > 0)
+        var remainingItems = workItems.findActiveByStage(stageId);
+        var hidden = workItems.hiddenIds(projectId);
+        if (remainingItems.stream().anyMatch(w -> !hidden.contains(w.getId())))
             throw SpaceApiException.conflict("STAGE_NOT_EMPTY", "Move active work items before deleting this stage.");
+        if (!remainingItems.isEmpty()) {
+            var fallback = all.stream().filter(s -> !s.getId().equals(stageId)).findFirst().orElseThrow();
+            int position = workItems.nextPosition(fallback.getId());
+            for (var item : remainingItems) {
+                item.moveToWorkflow(fallback, position++);
+                item.setUpdatedAt(Instant.now());
+            }
+            // The database protects nonempty stages; flush relocation before deleting the stage.
+            workItems.flush();
+        }
         stage.setDeleted(true);
         stage.setUpdatedAt(Instant.now());
         all.remove(stage);
@@ -106,20 +99,26 @@ public class WorkflowStageService {
         UUID projectId = workItems.findActiveProjectId(workItemId).orElseThrow(SpaceApiException::resourceNotFound);
         authorize(email, projectId, true);
         request.validate();
+        if (!workItems.isVisible(workItemId)) throw SpaceApiException.resourceNotFound();
         var target = findStage(stages.findActiveByProject(projectId), request.stageId());
         var all = workItems.findActiveByProject(projectId);
+        var hidden = workItems.hiddenIds(projectId);
         var item = all.stream().filter(w -> w.getId().equals(workItemId)).findFirst()
                 .orElseThrow(SpaceApiException::resourceNotFound);
         UUID sourceId = item.getWorkflow().getId();
-        var source = new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && !w.getId().equals(workItemId)).toList());
+        var source = new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && !w.getId().equals(workItemId) && !hidden.contains(w.getId())).toList());
         var destination = sourceId.equals(target.getId()) ? source :
-                new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId())).toList());
-        destination.add(insertionPosition(request.position(), destination.size()), item);
+                new ArrayList<>(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId()) && !hidden.contains(w.getId())).toList());
+        int position = insertionPosition(request.position(), destination.size());
+        destination.add(position, item);
+        // Keep hidden legacy rows after visible rows so physical positions remain unique.
+        source.addAll(all.stream().filter(w -> w.getWorkflow().getId().equals(sourceId) && hidden.contains(w.getId())).toList());
+        if (destination != source) destination.addAll(all.stream().filter(w -> w.getWorkflow().getId().equals(target.getId()) && hidden.contains(w.getId())).toList());
         item.moveToWorkflow(target, 0);
         renumberItems(source);
         if (destination != source) renumberItems(destination);
         item.setUpdatedAt(Instant.now());
-        return BoardWorkItemDto.from(item);
+        return BoardWorkItemDto.from(item, position);
     }
 
     private void authorize(String email, UUID projectId, boolean mutation) {
