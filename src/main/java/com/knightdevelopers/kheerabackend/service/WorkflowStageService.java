@@ -72,8 +72,20 @@ public class WorkflowStageService {
         var all = stages.findActiveByProject(projectId);
         var stage = findStage(all, stageId);
         if (all.size() == 1) throw SpaceApiException.conflict("LAST_STAGE", "A project must retain one active stage.");
-        if (workItems.countActiveByStage(stageId) > 0)
+        var remainingItems = workItems.findActiveByStage(stageId);
+        var hidden = workItems.hiddenIds(projectId);
+        if (remainingItems.stream().anyMatch(w -> !hidden.contains(w.getId())))
             throw SpaceApiException.conflict("STAGE_NOT_EMPTY", "Move active work items before deleting this stage.");
+        if (!remainingItems.isEmpty()) {
+            var fallback = all.stream().filter(s -> !s.getId().equals(stageId)).findFirst().orElseThrow();
+            int position = workItems.nextPosition(fallback.getId());
+            for (var item : remainingItems) {
+                item.moveToWorkflow(fallback, position++);
+                item.setUpdatedAt(Instant.now());
+            }
+            // The database protects nonempty stages; flush relocation before deleting the stage.
+            workItems.flush();
+        }
         stage.setDeleted(true);
         stage.setUpdatedAt(Instant.now());
         all.remove(stage);

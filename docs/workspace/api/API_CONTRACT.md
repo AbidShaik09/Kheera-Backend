@@ -334,7 +334,7 @@ their stage reference.
 
 ### 6. Work items and task details
 
-Task positions are zero-based ordinals among all visible tasks in their stage, before optional board filters or pagination. Hidden legacy rows do not consume public positions or move insertion indexes.
+Task positions are zero-based ordinals among all visible tasks in their stage, before optional board filters or pagination. Hidden legacy rows do not consume public positions or move insertion indexes. Project totals apply the same ancestor visibility rules. Type/member filters match historical links only within the project/space. Deleting a stage with only hidden legacy tasks relocates those rows to the first remaining stage, preserving history; visible tasks still prevent deletion.
 
 | Method and path | Status | Purpose |
 | --- | --- | --- |

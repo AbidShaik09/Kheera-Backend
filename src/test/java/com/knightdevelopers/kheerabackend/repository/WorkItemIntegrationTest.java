@@ -229,6 +229,39 @@ class WorkItemIntegrationTest extends PostgreSqlIntegrationTest {
         assertThat(jdbc.queryForObject("select is_deleted from work_items where id=?",Boolean.class,child)).isFalse();
     }
 
+    @Test void hiddenTasksDoNotInflateProjectMetrics() throws Exception {
+        UUID project=project(space()), foreign=project(space());
+        UUID parent=id(create(foreign,"{\"title\":\"Foreign\"}"));
+        UUID hidden=id(create(project,"{\"title\":\"Hidden\"}"));
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,hidden);
+        mvc.perform(get("/api/projects/"+project).header("Authorization",token())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.openTaskCount").value(0)).andExpect(jsonPath("$.progressPercent").value(0));
+    }
+
+    @Test void foreignLegacyFiltersNeverMatch() throws Exception {
+        UUID project=project(space()), foreignSpace=space(), foreign=project(foreignSpace);
+        var foreignTask=create(foreign,"{\"title\":\"Foreign\"}");
+        UUID member=jdbc.queryForObject("select id from space_members where space_id=? limit 1",UUID.class,foreignSpace);
+        UUID item=id(create(project,"{\"title\":\"Legacy\"}"));
+        jdbc.update("update work_items set assigned_to_id=?,work_item_type_id=? where id=?",member,UUID.fromString(foreignTask.get("typeId").asText()),item);
+        for(var filter:Map.of("typeId",foreignTask.get("typeId").asText(),"assigneeMemberId",member.toString()).entrySet())
+            mvc.perform(get(collection(project)).header("Authorization",token()).param(filter.getKey(),filter.getValue()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.totalItems").value(0));
+    }
+
+    @Test void stageDeletionRelocatesHiddenLegacyRowsWithoutDeletingHistory() throws Exception {
+        UUID project=project(space()), foreign=project(space());
+        UUID parent=id(create(foreign,"{\"title\":\"Foreign\"}"));
+        var hidden=create(project,"{\"title\":\"Hidden\"}");
+        jdbc.update("update work_items set parent_item_id=? where id=?",parent,id(hidden));
+        mvc.perform(delete("/api/projects/"+project+"/workflow-stages/"+hidden.get("stageId").asText()).header("Authorization",token()))
+                .andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("select is_deleted from work_items where id=?",Boolean.class,id(hidden))).isFalse();
+        assertThat(jdbc.queryForObject("select workflow_id from work_items where id=?",UUID.class,id(hidden)))
+                .isNotEqualTo(UUID.fromString(hidden.get("stageId").asText()));
+        mvc.perform(get(path(id(hidden))).header("Authorization",token())).andExpect(status().isNotFound());
+    }
+
     @Test void hiddenTasksDoNotShiftBoardPositionsOrMoveIndexes() throws Exception {
         UUID project=project(space()), foreign=project(space());
         UUID parent=id(create(foreign,"{\"title\":\"Foreign parent\"}"));
